@@ -8,7 +8,6 @@ shinyUI(
   
   dashboardPage(skin="red", 
                
-    
     dashboardHeader(
       title = "FRAUD DETECTION",
       dropdownMenu(type = "notifications", notificationItem(
