@@ -1,7 +1,7 @@
 #Projet_SVM_AKS
 library(shiny)
 library(shinydashboard)
-library("DescTools", lib.loc="~/R/win-library/3.5")
+
 
 shinyUI(
   
@@ -61,7 +61,6 @@ shinyUI(
                 
                 box(fileInput("loading",""),background = "navy", title="Load data",width = 3, solidHeader = TRUE, status = "primary" ),
                 
-                
                 tabBox (width = 9,
                     title="Statistics and graphics", id = "stat",
                     tabPanel("Summary","ICI NOUS ALLONS METTRE LES STATISTIQUES DESCRIPTIVES DE LA BASE"),
@@ -93,11 +92,7 @@ shinyUI(
                 
         ),
         tabItem(tabName = "sample",
-                numericInput("select_train","Training proportion",min=0, max=1, value=0.7, step=0.01),
-                selectInput("select_sampling","Choose the method",c("Oversampling", "Undersampling", "SMOTE", "ADASYN", "Tomek-Link", "Tomek-Link + Undersampling","Condensed Nearest Neighbor" )),
-                uiOutput("sampling_out"),
-                dataTableOutput("out")
-       
+                selectInput("select_sample","Please Choose the method",c("Oversampling", "Undersampling", "SMOTE", "ADASYN"))
         )
       )
       
