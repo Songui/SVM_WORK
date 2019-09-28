@@ -64,7 +64,8 @@ shinyUI(
                 
                 tabBox (width = 9,
                     title="Statistics and graphics", id = "stat",
-                    tabPanel("Summary","ICI NOUS ALLONS METTRE LES STATISTIQUES DESCRIPTIVES DE LA BASE"),
+                    tabPanel("Summary",
+                             plotOutput("plot1")),
                     tabPanel("Visualisation","MISE EN PLACE DE GRAPHIQUES DYNAMIQUES OU STATIQUES AVEC PLOTLY ET GGPLOT")
                   )
                 

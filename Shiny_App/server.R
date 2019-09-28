@@ -9,6 +9,8 @@ library(shiny)
 library(DescTools)
 library(smotefamily)
 library(unbalanced)
+library(DataExplorer)
+library(summarytools)
 
 oversampling = function (data, p, position) 
 {
@@ -68,6 +70,34 @@ shinyServer(function(input, output) {
     }) #Chargement de la table
 
 
+  ###################### DATA PART ##############################
+  
+  output$plot1 = renderPlot({
+    if (is.null(data())) {return()}
+    x= plot_str(data())
+    x
+    
+  })
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   ###################### SAMPLING PART ##############################
   
