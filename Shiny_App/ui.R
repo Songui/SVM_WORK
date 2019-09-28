@@ -1,7 +1,7 @@
 #Projet_SVM_AKS
 library(shiny)
 library(shinydashboard)
-library("DescTools", lib.loc="~/R/win-library/3.5")
+library(DescTools)
 
 shinyUI(
   
