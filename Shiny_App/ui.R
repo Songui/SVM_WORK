@@ -15,6 +15,10 @@ library(shinydashboard)
 library(DescTools)
 library(plotly)
 library(shinydashboardPlus)
+library(e1071)
+
+
+
 
 
 shinyUI(
@@ -38,7 +42,7 @@ shinyUI(
                  menuSubItem("Sampling", tabName = "sample"),
                  menuSubItem("SVM method", tabName = "svm"),
                  menuSubItem("Benchmarking analysis", tabName = "benchmark")),
-        menuItem("Prediction", tabName = "prediction", icon = icon("dashboard"))
+        menuItem("Prediction", tabName = "prediction", icon = icon("line-chart"))
       )),
     body = dashboardBody(
       tabItems(
@@ -87,7 +91,7 @@ shinyUI(
                   
                   tabBox (width = 12,title="Statistics and graphics", id = "stat",
                           tabPanel("Data",
-                                   DT::dataTableOutput("data")
+                                    dataTableOutput("data")
                           ),
                           tabPanel("Summary",
                                    verbatimTextOutput("sum1"),
@@ -114,25 +118,92 @@ shinyUI(
                 )      
         ),
         tabItem(tabName = "svm" , 
-                fluidPage(
-                  tabBox (width=12,
-                          title="SVM", id = "svm",
-                          tabPanel("Description","ICI NOUS ALLONS DECRIRE LA METHODE SVM"),
-                          tabPanel("Implementation","IMPLEMENTATION DU SVM")
-                  )
+                
+                fluidPage(tabBox (width=12,
+                                  title="SVM", id = "svm",
+                                  tabPanel("Description",
+                                           div(class="coin",box(
+                                             
+                                             fluidRow(
+                                               column(width = 4,div(class="coin",img(src='logo3.jpg', height = 200 ,width = 400),style="text-align: left;")),
+                                               
+                                               column(width=8,p("Concrètement, il s’agit d’une science moderne permettant de découvrir des patterns et d’effectuer des prédictions à partir de données en se basant sur des statistiques, sur du forage de données, 
+                                                                sur la reconnaissances de patterns et sur les analyses prédictives. Les premiers algorithmes sont créés à la fin des années 1950
+                                                                L'apprentissage automatique (en anglais machine learning, littéralement « apprentissage machine ») ou apprentissage statistique est un champ d'étude de l'intelligence artificielle qui se fonde sur 
+                                                                des approches statistiques pour donner aux ordinateurs la capacité d' « apprendre » à partir de données, c'est-à-dire d'améliorer leurs performances à résoudre des tâches sans être explicitement programmés pour chacune. Plus largement, il concerne la conception, l'analyse, le développement et l'implémentation de telles méthodes. "))
+                                               
+                                               ),
+                                             title="Machine learning : définition et explications",status = "primary", solidHeader = TRUE,collapsible = TRUE, width = 12)),
+                                           
+                                           box(h3(strong("Comprendre les SVM")),
+                                               p("Les SVM sont une famille d algorithmes d'apprentissage automatique qui permettent de résoudre des problèmes tant de classification que de régression ou de détection d’anomalie. Ils sont connus pour leurs solides garanties théoriques, leur grande flexibilite ainsi que leur simplicite d utilisation."),
+                                               h3(strong("Intuition")),
+                                               HTML('<p><img src="logo2.png"/></p>'),
+                                               
+                                               h3(strong("Formalisation du SVM")),
+                                               p("Programmes, paramètres et fonction kernel"),
+                                               h3(strong("Avantages de la méthode")),
+                                               
+                                               title="Les machines à vecteur support",status = "primary", solidHeader = TRUE,collapsible = TRUE, width = 12)
+                                           ),
+                                  tabPanel("Implementation et résultats",
+                                           box(
+                                             h3(strong("Choix des paramètres")),
+                                             radioButtons(inputId = 'selection_auto', label = 'Voulez vous utiliser la selection automatique des paramètres au moyen de la validation croisée ?',choices=c('Oui', 'Non') ,selected='Non',inline=TRUE),
+                                             
+                                             uiOutput("choix_param"),
+                                             uiOutput("value2"),
+                                             
+                                             checkboxInput(inputId = 'scale', label = 'Centrer et réduire les données',value=FALSE),
+                                             actionButton("resultat" ,"See result", icon("refresh")),
+                                             #printOuptput("Nombre de vecteurs supports"),
+                                             #printOutput("tx_erreur")
+                                             
+                                             
+                                             title="Implémentation",status = "primary", solidHeader = TRUE,collapsible = TRUE, width = 6),
+                                           box(verbatimTextOutput("value"),
+                                               
+                                               h3(strong("Matrice de confusion")),
+                                               verbatimTextOutput("tab_confus"),
+                                               h3(strong("Courbe ROC")),
+                                               plotOutput("roc"),
+                                               h3(strong("Indice de gini")),
+                                               title="Performance",status = "primary", solidHeader = TRUE,collapsible = TRUE, width = 6)
+                                  )
+                       )  
+                  
                   
                 )),
         tabItem(tabName = "benchmark",
                 fluidPage(
-                  tabBox (
+                  tabBox (width=12,
                     title="Comparison SVM with others Methods", id = "comparison",
-                    selectInput("methods","Choose Methods",c("Logistic regression","KNN","K-means","Boosting", "Random Forest", "Bagging") )
+                    tabPanel("Benchmarking",
+                            sidebarLayout( 
+                             sidebarPanel(selectInput("methods","Choose Methods",c("Logistic regression","KNN","LDA","Classifications trees","Boosting", "Random Forest")),
+                                          uiOutput("method_param"), width = 3),
+                             mainPanel(fluidRow(
+                                      column(width=6, box(verbatimTextOutput("confusion"),
+                                                         background = "navy",width = 12, title="Selected Method Performance",solidHeader = TRUE , status = "primary",collapsible = TRUE)),
+                                      column(width=6, box(verbatimTextOutput("svm_perform"), background = "navy", width = 12, title="SVM Performance", solidHeader = TRUE , status = "primary", collapsible = TRUE))
+                                      ),
+                                      fluidRow(
+                                      column(width=6, box(plotOutput("roc_curve"), background = "navy", width = 12, title="Roc Curve", solidHeader = TRUE ,status = "primary",collapsible = TRUE)),
+                                      column(width=6,
+                                             box(plotOutput ("gini"),
+                                                 background = "navy",width = 12, title="Gini Index",solidHeader = TRUE ,status = "primary",collapsible = TRUE))
+                                      ), width = 9)
+                             
+                          )),
+                    tabPanel("Benchmarking2")
+                    
                   )
                   
                 )),
         tabItem(tabName = "prediction",
                 fluidPage(
-                  selectInput("select_predict","Please Choose one way !",c("Load external data", "Enter data"))
+                  selectInput("select_predict","Please Choose one way !",c("Load external data", "Enter data")),
+                  box(uiOutput("pred"))
                   
                   
                 )),
@@ -147,11 +218,23 @@ shinyUI(
         
       )
     ),
-    rightsidebar = rightSidebar(),
+    rightsidebar = rightSidebar(titlePanel(h4("Connected")), helpText(br(),h4(strong("You are authentified as"))),htmlOutput("authent1")),
     footer = dashboardFooter(
       left_text = h6(" © GROUP AKS OF MASTER ESA - Toute reproduction même partielle de la page est strictement interdite"),
       right_text = h6("ORLEANS 2019")
-    )
+    ),
+    
+    enable_preloader = TRUE,
+    #collapse_sidebar = TRUE,
+    sidebar_background ="light",
+    loading_duration = 0.5
+   #md =TRUE
+   # dashboardControlbar()
  
   )
 )
+
+
+
+
+
