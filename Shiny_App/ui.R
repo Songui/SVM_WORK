@@ -122,58 +122,88 @@ shinyUI(
                 fluidPage(tabBox (width=12,
                                   title="SVM", id = "svm",
                                   tabPanel("Description",
+                                           sidebarLayout(
                                            div(class="coin",box(
                                              
                                              fluidRow(
-                                               column(width = 4,div(class="coin",img(src='logo3.jpg', height = 200 ,width = 400),style="text-align: left;")),
+                                               column(width = 4,div(class="coin",img(src='logo3.jpg', height = 260 ,width = 400),style="text-align: left;")),
                                                
-                                               column(width=8,p("Concrètement, il s’agit d’une science moderne permettant de découvrir des patterns et d’effectuer des prédictions à partir de données en se basant sur des statistiques, sur du forage de données, 
-                                                                sur la reconnaissances de patterns et sur les analyses prédictives. Les premiers algorithmes sont créés à la fin des années 1950
-                                                                L'apprentissage automatique (en anglais machine learning, littéralement « apprentissage machine ») ou apprentissage statistique est un champ d'étude de l'intelligence artificielle qui se fonde sur 
-                                                                des approches statistiques pour donner aux ordinateurs la capacité d' « apprendre » à partir de données, c'est-à-dire d'améliorer leurs performances à résoudre des tâches sans être explicitement programmés pour chacune. Plus largement, il concerne la conception, l'analyse, le développement et l'implémentation de telles méthodes. "))
+                                               column(width=8,box(p("It is interesting to understand machine learning in order to better understand its importance and better exploit it."), 
+                                                                  p("Machine Learning is based on mathematical reasoning, which is computer-generated in algorithms capable of digesting large amounts of information to acquire new knowledge or to understand behavior."),
+                                                                  p("Its principle is to be able to learn independently from these data and to evolve recursively continuously."),
+                                                                  p("It is much more efficient, applied to large sets of varied data, than traditional methods in terms of accuracy and speed."), 
+                                                                  p("There are a plethora of areas in which machine learning intervenes, namely finance. Thus, based on information associated with a transaction such as amount and location, and historical and social data, Machine Learning can detect potential credit card fraud in record time.")
+                                                                  ,width=12))
                                                
-                                               ),
-                                             title="Machine learning : définition et explications",status = "primary", solidHeader = TRUE,collapsible = TRUE, width = 12)),
+                                             ),
+                                             title="Machine learning : définition et principe",status = "primary", solidHeader = TRUE,collapsible = TRUE, width = 12)),
                                            
-                                           box(h3(strong("Comprendre les SVM")),
-                                               p("Les SVM sont une famille d algorithmes d'apprentissage automatique qui permettent de résoudre des problèmes tant de classification que de régression ou de détection d’anomalie. Ils sont connus pour leurs solides garanties théoriques, leur grande flexibilite ainsi que leur simplicite d utilisation."),
-                                               h3(strong("Intuition")),
-                                               HTML('<p><img src="logo2.png"/></p>'),
+                                           box(h3(strong("Understanding SVM")),
+                                               box(
+                                                 p("SVMs are a family of machine learning algorithms that solve both classification and regression problems."),
+                                                 p("Supports vectors machines are based on two key ideas: the notion of maximum margin and the kernel trick.
+                                                   The margin is the distance between the separation boundary and the closest samples (called support vectors). In the SVM, the separation boundary is chosen as the one that maximizes the margin."),
+                                                 p("The second idea of these algorithms (kernel trick) allows to deal with cases where the data are not linearly separable. It is a question of transforming the representation space of the input data into a space of larger dimension, in which it is probable that there is a linear separation. This is achieved through a kernel function (whose explicit knowledge is not necessary) that must meet certain conditions."),
+                                                 width=12),
                                                
-                                               h3(strong("Formalisation du SVM")),
-                                               p("Programmes, paramètres et fonction kernel"),
-                                               h3(strong("Avantages de la méthode")),
+                                               h3(strong("Formalization of the method")),
                                                
-                                               title="Les machines à vecteur support",status = "primary", solidHeader = TRUE,collapsible = TRUE, width = 12)
-                                           ),
-                                  tabPanel("Implementation et résultats",
+                                               p("We search for the classifier g of the form:"),
+                                               div(class="coin",img(src='logo11.png', height = 100 ,width = 400)),
+                                               p("The formulation of optimization programs for support vector machines differs according to whether the sample is linearly separable, almost linearly separable (soft margin: introduction of spring variables) or not linearly separable (kernel trick):"),
+                                               fluidRow(
+                                                 column(4, div(class="coin",img(src='logo9.png', height = 200 ,width = 300)), strong("linearly separable sample")),
+                                                 column(4, div(class="coin",img(src='logo8.png', height = 200 ,width = 300)), strong("almost linearly separable sample")),
+                                                 column(4, div(class="coin",img(src='logo7.png', height = 200 ,width = 300)), strong("non-linearly separable sample"))
+                                               ),
+                                               br(),
+                                               
+                                               p("In practice, most classification problems are nonlinear separations, hence the use of kernel trick to make them linearly separable."),
+                                               p("In this context, the optimization program is thus given by:"),
+                                               br(),
+                                               box(div(class="coin",img(src='logo6.png', height = 200 ,width = 400),style="text-align: center;"),width=12),
+                                               br(),
+                                               
+                                               p("At this level, several parameters intervene:"),
+                                               p(strong("C") ,": controls the arbitration between the margin dimension and the error rate and whose selection can be made by cross validation"),
+                                               p(strong("ξ"), "spring variables that control the number of errors to allow"),
+                                               p("Also appears the function of transforming the data space into a larger space", strong("ϕ(.)")),
+                                               
+                                               
+                                               h3(strong("Advantages of support vector machines")),
+                                               br(),
+                                               fluidRow(
+                                                 
+                                                 valueBox("Robustness...", "against noise thanks to the maximization of the margin, which makes the SVM more generalizable", icon = icon("thumbs-up"),color = "light-blue"),
+                                                 valueBox("Ease...", "of use because unlike some methods, we can use them without understanding all the operation", icon = icon("thumbs-up"),color = "light-blue"),
+                                                 valueBox("Flexibility...", "of the method that adapts according to the nature of the data", icon = icon("thumbs-up"),color = "light-blue")
+                                               ),
+                                               
+                                               
+                                               title="Support vector machines",status = "primary", solidHeader = TRUE,collapsible = TRUE, width = 12)
+                                           )),
+                                  tabPanel("Implementation and results",
+                                           sidebarLayout(
                                            box(
-                                             h3(strong("Choix des paramètres")),
-                                             radioButtons(inputId = 'selection_auto', label = 'Voulez vous utiliser la selection automatique des paramètres au moyen de la validation croisée ?',choices=c('Oui', 'Non') ,selected='Non',inline=TRUE),
-                                             
+                                             h3(strong("Choice of parameters")),
+                                             checkboxInput(inputId = 'scale', label = 'Check if the data is not centered and reduced',value=FALSE),
+                                             radioButtons(inputId = 'selection_auto', label = 'Do you want to use automatic parameter selection with cross-validation?',choices=c('Oui', 'Non') ,selected='Non',inline=TRUE),
+                                             bsPopover(id="selection_auto",title="Cross validation", content="Optimization of the choice of hyper-parameters in order to avoid over-learning. Hold-out validation will be used",placement="left"),
                                              uiOutput("choix_param"),
                                              uiOutput("value2"),
                                              
-                                             checkboxInput(inputId = 'scale', label = 'Centrer et réduire les données',value=FALSE),
-                                             actionButton("resultat" ,"See result", icon("refresh")),
-                                             #printOuptput("Nombre de vecteurs supports"),
-                                             #printOutput("tx_erreur")
-                                             
-                                             
-                                             title="Implémentation",status = "primary", solidHeader = TRUE,collapsible = TRUE, width = 6),
+                                             title="Implementation",status = "primary", solidHeader = TRUE,collapsible = TRUE, width = 6),
                                            box(verbatimTextOutput("value"),
                                                
-                                               h3(strong("Matrice de confusion")),
+                                               h3(strong("Confusion matrix")),
                                                verbatimTextOutput("tab_confus"),
-                                               h3(strong("Courbe ROC")),
+                                               h3(strong("ROC Curve")),
                                                plotOutput("roc"),
-                                               h3(strong("Indice de gini")),
+                                               h3(strong("Gini index")),
                                                title="Performance",status = "primary", solidHeader = TRUE,collapsible = TRUE, width = 6)
                                   )
-                       )  
-                  
-                  
-                )),
+                )  
+                ))),
         tabItem(tabName = "benchmark",
                 fluidPage(
                   tabBox (width=12,

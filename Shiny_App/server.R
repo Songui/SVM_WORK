@@ -27,6 +27,9 @@ library (class)
 library(tree)
 library(gbm)
 library(caret)
+library(pROC)
+library(ROCR)
+library(shinyBS)
 
 Logged = FALSE
 
@@ -477,8 +480,10 @@ output$authent1 = renderUI(
   
   output$choix_param = renderUI(
     switch(input$selection_auto, 
-           "Non" = list(sliderInput("cost",label = "Constante de coût", min = 1, max = 1000, value = 10),
-                        selectInput(inputId='kernel', label='Fonction kernel', choices=c('linear','sigmoid','radial basis','polynomial') ,multiple = F, selected='linear')
+           "Non" = list(popify(el=sliderInput("cost",list("Constante de coût",icon("question-circle")), min = 1, max = 1000, value = 10),
+                               title="<b>Constante de coût</b>",content="Cet hyper-paramètre désigne un coefficient de pénalisation/paramètre de coût. Plus il est petit, plus les erreurs de classification sont moins pénalisées et l’accent est mis sur la maximisation de la marge. Plus il est grand, plus l’accent est mis sur l’absence de mauvaise classification et la marge devient plus faible.", placement="top"),
+                        popify(el=selectInput(inputId='kernel', label=list('Fonction kernel',icon("question-circle")), choices=c('linear','sigmoid','radial basis','polynomial') ,multiple = F, selected='linear'),
+                               title="<b>Fonction kernel</b>",content="Fonctions qui permettent la projection dans un espace de plus grande dimension pour trouver la solution adéquate, sans avoir à former explicitement ce nouvel espace de représentation.", placement="top")      
                         
            ),
            "Oui" = list(p('Une validation croisée sera utilisée pour selectionner les hyper-paramètres'),
@@ -545,46 +550,67 @@ output$authent1 = renderUI(
     )
   )
   
-  
-  
   output$value2 = renderUI({
-    if (reactive(input$validation_auto) == "Non" ){
-      switch(input$kernel, 
-             "sigmoid" = sliderInput("gamma_s",label = "Degré de linéarité de l'hyperplan", min = 0.001, max = 10, value = 0.1),
-             
-             
-             "polynomial" = list(sliderInput("gamma_p",label = "Degré de linéarité de l'hyperplan", min = 0.001, max = 10, value = 0.1),
-                                 sliderInput("degre_p",label = "Degré de du polynome de la fonction kernel", min =1, max = 30, value = 1)
-             ),
-             "radial basis" = sliderInput("gamma_rd",label = "Degré de linéarité de l'hyperplan", min = 0.001, max = 10, value = 0.1)
-             
+    
+    if ( input$selection_auto == "Non"){
+      
+      switch (input$kernel,
+              "sigmoid" = popify(el=sliderInput("gamma_s",label = list("Degré de linéarité de l'hyperplan",icon("question-circle")), min = 0.001, max = 10, value = 0.1),
+                                 title="<b>Gamma</b>", content ="Hyper-paramètre pour les hyperplans non linéaires. Plus sa valeur est grande plus la méthode s ajuste aux données",placement="top"),
+              
+              "polynomial" = list(popify(el=sliderInput("gamma_p",label = list("Degré de linéarité de l'hyperplan",icon("question-circle")), min = 0.001, max = 10, value = 0.1),
+                                         title="<b>Gamma</b>", content ="Hyper-paramètre pour les hyperplans non linéaires. Plus sa valeur est grande plus la méthode s ajuste aux données",placement="top"),
+                                  popify(el=sliderInput("degre_p",label = list("Degré du polynôme de la fonction kernel",icon("question-circle")), min =1, max = 30, value = 1),
+                                         title="<b>Degree</b>", content ="Correspond au degré du polynôme utilisé par la fonction kernel pour trouver l hyperplan optimal",placement="top")),
+              "radial basis" = popify(el=sliderInput("gamma_rd",label = list("Degré de linéarité de l'hyperplan",icon("question-circle")), min = 0.001, max = 10, value = 0.1),
+                                      title="<b>Gamma</b>", content ="Hyper-paramètre pour les hyperplans non linéaires. Plus sa valeur est grande plus la méthode s ajuste aux données",placement="top")
       )
-    } 
+      
+      
+      
+    }
+    else {return()}
+    
+    
   })
+  
+  param_gamma = reactive(try(if(input$kernel == "sigmoid"){input$gamma_s} 
+                             else{if(input$kernel == "polynomial"){input$gamma_p} else if(input$kernel == "radial basis"){input$gamma_rd}}))
+  
+  degree = reactive(input$degre_p)
   
   
   # modele svm si choix manuel
   
-  
   output$value = renderPrint({
+    if(input$kernel == "linear"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, cost=input$cost, type="C-classification", scale=input$scale))}
+    else if (input$kernel == "polynomial"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), degree = degree(), cost=input$cost, type="C-classification", scale=input$scale))}
+    else {method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), cost=input$cost, type="C-classification", scale=input$scale))}
     
-    method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, cost=input$cost, type="C-classification", scale=F))
     method()
     
   })
   
   output$tab_confus = renderPrint({
+    if(input$kernel == "linear"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, cost=input$cost, type="C-classification", scale=input$scale))}
+    else if (input$kernel == "polynomial"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), degree = degree(), cost=input$cost, type="C-classification", scale=input$scale))}
+    else {method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), cost=input$cost, type="C-classification", scale=input$scale))}
     
-    svm_method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, cost=input$cost, scale=F, type="C-classification"))  
-    pred=reactive(predict(svm_method(), test_sample()))
+    #svm_method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, cost=input$cost, scale=input$scale, type="C-classification"))  
+    pred=reactive(predict(method(), test_sample()))
     Conf(pred() ,test_sample()$class)
     
     
   })
   
   output$roc = renderPlot ({
-    svm_method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, cost=input$cost, scale=F, type="C-classification"))  
-    pred=reactive(predict(svm_method(), test_sample()))
+    
+    if(input$kernel == "linear"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, cost=input$cost, type="C-classification", scale=input$scale))}
+    else if (input$kernel == "polynomial"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), degree = degree(), cost=input$cost, type="C-classification", scale=input$scale))}
+    else {method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), cost=input$cost, type="C-classification", scale=input$scale))}
+    
+    
+    pred=reactive(predict(method(), test_sample()))
     predic <- prediction(predictions = as.numeric(pred()), labels = as.numeric(test_sample()$class))
     perf <- performance(predic, measure = "tpr", x.measure = "fpr")
     plot(perf, col=rainbow(10))
@@ -609,7 +635,6 @@ output$authent1 = renderUI(
     train2 = reactive(sample(1:nrow(resampling_train()),n_validat()))
     resampling_train()[-train2(),]
   })
-  
 
   
   

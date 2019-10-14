@@ -1,0 +1,16 @@
+.main-header .logo {
+  font-family: "Georgia", Times, "Times New Roman", serif;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.myclass {
+    position: absolute;
+}
+
+.coin {
+-moz-border-radius: 10px;
+-webkit-border-radius: 10px;
+/*arrondir les coins */
+border-radius:10px;
+}
