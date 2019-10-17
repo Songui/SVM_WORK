@@ -86,81 +86,75 @@ options(shiny.maxRequestSize=150*1024^2)
 
 
 shinyServer(function(input, output, session) {
- 
-##################### Authentification ########################
   
-values <- reactiveValues(authenticated = FALSE) #, error = 0)
-
-
-
-dataModal1 <- function() {
-  modalDialog(
-    helpText((strong(h3("Authentification"))),br()),
-    wellPanel(textInput("username", "Username :"),
-    passwordInput("password", "Password :")
-    #   if (values$error > 0 & values$authenticated == FALSE)
-    #   {
-    #     helpText(div("Your password or username is incorrect.", br(), "Please retry again or contact administrator page !", style = "color:red"),br(), p(strong("Admin mail :"),span(em("aksgroup@gmail.com"),style = "color:blue")))
-    #   }
-    ),
-    footer = actionButton("ok", "LogIn"),
-    fade = FALSE
-  )
-}
-
-
-
-obs1 <- observe({
-  showModal(dataModal1())
-})
-
-obs2 <- observe({
-  req(input$ok)
-  isolate({
-    Username <- input$username
-    Password <- input$password
-  })
-  Id.username <- which(my_username == Username)
-  Id.password <- which(my_password == Password)
-  if (length(Id.username) > 0 & length(Id.password) > 0) 
-  { Logged <<- TRUE
-  values$authenticated <- TRUE
-  obs1$suspend()
-  removeModal()
+  ##################### Authentification ########################
   
-  } else {
-    values$authenticated <- FALSE
-    #values$error <- input$ok
-  }     
-})
-
-#######Gestion du right side bar 
-
-output$authent1 = renderUI(
-  {
-    if (values$authenticated)
-    {
-    Username <- input$username
-    Id <- which(my_username == Username)
-    nameE =  all_names[Id]
-    # c = paste("You are authentified as", nameE)
-    # background-color:powderblue;
-    div(nameE,style = "color:rgb(180,85,85);font-family: verdana;
-  font-size: 150%; border: 1px solid powderblue;
-  padding: 5px;")
-    }
-    
-    
-    
+  values <- reactiveValues(authenticated = FALSE)
+  
+  dataModal1 <- function() {
+    modalDialog(
+      helpText((strong(h3("Authentification"))),br()),
+      wellPanel(textInput("username", "Username :"),
+                passwordInput("password", "Password :")
+                
+      ),
+      footer = actionButton("ok", "LogIn"),
+      fade = FALSE
+    )
   }
-)
-
-#output$authent1 = renderText(
   
- # "  Fully enjoy our app !" )
   
- 
-###################### DATA PART ##############################  
+  obs1 <- observe({
+    showModal(dataModal1())
+  })
+  
+  obs2 <- observe({
+    req(input$ok)
+    isolate({
+      Username <- input$username
+      Password <- input$password
+    })
+    Id.username <- which(my_username == Username)
+    Id.password <- which(my_password == Password)
+    if (length(Id.username) > 0 & length(Id.password) > 0) 
+    { Logged <<- TRUE
+    values$authenticated <- TRUE
+    obs1$suspend()
+    removeModal()
+    
+    } else {
+      values$authenticated <- FALSE
+      
+    }     
+  })
+  
+  #######Gestion du right side bar 
+  
+  output$authent = renderUI(
+    {
+      if (values$authenticated)
+      {
+        Username <- input$username
+        Id <- which(my_username == Username)
+        nameE =  all_names[Id]
+        # c = paste("You are authentified as", nameE)
+        # background-color:powderblue;
+        div(nameE,style = "color:rgb(180,85,85);font-family: verdana;
+            font-size: 150%; border: 1px solid powderblue;
+            padding: 5px;")
+      }
+      
+      
+      
+      }
+  )
+  
+  #output$authent1 = renderText(
+  
+  # "  Fully enjoy our app !" )
+  
+  
+  ###################### DATA PART ##############################  
   
   output$file_options = renderUI({
     
@@ -168,11 +162,11 @@ output$authent1 = renderUI(
            "CSV" = list(radioButtons(inputId = 'sep', label = 'Separator', choices = c(Comma=',',Semicolon=';',Tab='\t', Space=''), selected = ','),
                         checkboxInput(inputId = 'header', label =strong('Header'), value = TRUE),
                         radioButtons(inputId = 'dec', label = 'Decimal', choices = c(Point='.', Comma=','), selected = '.')
-             ),
+           ),
            "TXT" = list(radioButtons(inputId = 'sep', label = 'Separator', choices = c(Comma=',',Semicolon=';',Tab='\t', Space=''), selected = ','),
-                   checkboxInput(inputId = 'header', label = strong('Header'), value = TRUE),
-                   radioButtons(inputId = 'dec', label = 'Decimal', choices = c(Point=".", Comma=','), selected = '.')
-             ),
+                        checkboxInput(inputId = 'header', label = strong('Header'), value = TRUE),
+                        radioButtons(inputId = 'dec', label = 'Decimal', choices = c(Point=".", Comma=','), selected = '.')
+           ),
            "EXCEL" = checkboxInput(inputId = 'header', label = strong('Header'), value = TRUE))
     
   })
@@ -184,20 +178,20 @@ output$authent1 = renderUI(
     )
     
     file = input$loading
- 
+    
     data= switch(input$type_file,
-           "CSV" = read.csv (file$datapath, header = input$header, sep = input$sep, dec = input$dec), 
-           "TXT" = read.table (file$datapath, header = input$header, sep = input$sep, dec = input$dec),
-           "EXCEL" = read_excel(file$datapath, col_names = input$header),
-           "SAS" = read_sas(file$datapath)
-           )
+                 "CSV" = read.csv (file$datapath, header = input$header, sep = input$sep, dec = input$dec), 
+                 "TXT" = read.table (file$datapath, header = input$header, sep = input$sep, dec = input$dec),
+                 "EXCEL" = read_excel(file$datapath, col_names = input$header),
+                 "SAS" = read_sas(file$datapath)
+    )
     as.data.frame(data)
     
-    }) 
-
+  }) 
+  
   
   output$target_ui = renderUI({
-  
+    
     selectInput("targetvar", "Select your target variable",names(raw_data()))
     
   })
@@ -220,7 +214,7 @@ output$authent1 = renderUI(
     )
     which(names(data()) == "class")
     
-    })
+  })
   
   output$other_var_ui = renderUI({
     validate(
@@ -228,12 +222,12 @@ output$authent1 = renderUI(
     )
     
     selectInput("other_var", "Select variables to withdraw from modelisation",names(data())[- target_position()],multiple = TRUE)
-    })
+  })
   
   
   output$data = renderDataTable(data() , options = list(scrollX = TRUE))
   
-   
+  
   output$plot3 = renderPlot({
     
     data = as.matrix(dplyr::select_if(data(), is.numeric))
@@ -243,45 +237,45 @@ output$authent1 = renderUI(
   
   
   output$plot2 = renderPlot(
-  
+    
     ggplot(data=data()) + geom_bar(mapping = aes(x=class))
   )
   
   
   output$plot1 = renderUI(
-
+    
     print(dfSummary(data(), graph.magnif = 0.8), 
-              method = 'render',
-              headings = FALSE,
-              bootstrap.css = FALSE)
+          method = 'render',
+          headings = FALSE,
+          bootstrap.css = FALSE)
   )
   
   
- output$sum1 = renderPrint( introduce(data()) )
-  
- 
- output$boxplot_var = renderUI(
-   
-     selectInput("boxplot","Choose one variable for BoxPlot",names(dplyr::select_if(data(), is.numeric   )))
-)
- 
- output$plot4 = renderPlot(
-   
-   ggplot(data = data()) + 
-     geom_boxplot(mapping = aes(x = class, y = get(input$boxplot))) +
-       labs(y = input$boxplot)
- )
+  output$sum1 = renderPrint( introduce(data()) )
   
   
-    ###################### SAMPLING PART ##############################
+  output$boxplot_var = renderUI(
+    
+    selectInput("boxplot","Choose one variable for BoxPlot",names(dplyr::select_if(data(), is.numeric   )))
+  )
+  
+  output$plot4 = renderPlot(
+    
+    ggplot(data = data()) + 
+      geom_boxplot(mapping = aes(x = class, y = get(input$boxplot))) +
+      labs(y = input$boxplot)
+  )
+  
+  
+  ###################### SAMPLING PART ##############################
   
   train = reactive({
     data_nrow = nrow(data())
     train_length = round(input$select_train*data_nrow)
     sample (data_nrow,train_length) #Index pour l'échantillon d'apprentissage, on peut le changer.
-    })
+  })
   
-   
+  
   train_sample = reactive({
     var = setdiff(names(data()), input$other_var)
     data()[train(),var]
@@ -290,12 +284,12 @@ output$authent1 = renderUI(
   test_sample = reactive({
     var = setdiff(names(data()), input$other_var)
     data()[-train(), var]
-    }) #Echantillon test
+  }) #Echantillon test
   
   r_event_freq = reactive({
     freq = Freq(train_sample()$class)
     min(freq$perc)
-    }) #la fréquence de l'évènement rare
+  }) #la fréquence de l'évènement rare
   
   
   output$sampling_out = renderUI ({
@@ -325,21 +319,21 @@ output$authent1 = renderUI(
     k_near = try(floor(input$k_near),silent = T)
     
     dat= switch(input$select_sampling,
-           "Oversampling" = oversampling(train_sample,p1,y_position) ,
-           "Undersampling" = undersampling(train_sample,p2,y_position) ,
-           "SMOTE" = {s = SMOTE(train_sample[,-y_position],y, dup_size=dup_size, K= k_near)$data 
-                      s$class = as.factor(s$class)
-                      s},
-           "ADASYN" = {a = ADAS(train_sample[,-y_position],y, K=k_near)$data
-                       a$class = as.factor(a$class)
-                       a},
-           "Tomek-Link" = {data = ubTomek(X=train_sample[,-y_position], Y= train_sample[,y_position]);
-                             cbind(data$X,class=data$Y)},
-           "Tomek-Link + Undersampling" = {data = ubTomek(X=train_sample[,-y_position], Y= train_sample[,y_position]);
-                                           newData = cbind(data$X,class=data$Y);
-                                           undersampling(newData,p2 ,y_position)},
-           "Condensed Nearest Neighbor" = {data = ubCNN(X=train_sample[,-y_position], Y= train_sample[,y_position]);
-                                                  cbind(data$X,class=data$Y) }
+                "Oversampling" = oversampling(train_sample,p1,y_position) ,
+                "Undersampling" = undersampling(train_sample,p2,y_position) ,
+                "SMOTE" = {s = SMOTE(train_sample[,-y_position],y, dup_size=dup_size, K= k_near)$data 
+                s$class = as.factor(s$class)
+                s},
+                "ADASYN" = {a = ADAS(train_sample[,-y_position],y, K=k_near)$data
+                a$class = as.factor(a$class)
+                a},
+                "Tomek-Link" = {data = ubTomek(X=train_sample[,-y_position], Y= train_sample[,y_position]);
+                cbind(data$X,class=data$Y)},
+                "Tomek-Link + Undersampling" = {data = ubTomek(X=train_sample[,-y_position], Y= train_sample[,y_position]);
+                newData = cbind(data$X,class=data$Y);
+                undersampling(newData,p2 ,y_position)},
+                "Condensed Nearest Neighbor" = {data = ubCNN(X=train_sample[,-y_position], Y= train_sample[,y_position]);
+                cbind(data$X,class=data$Y) }
     )
     
     
@@ -347,7 +341,7 @@ output$authent1 = renderUI(
   })
   
   output$out = renderDataTable(resampling_train(), options = list(scrollX = TRUE)) 
-    
+  
   output$method_param = renderUI ({
     
     if(is.null(data())) {return()}
@@ -355,16 +349,16 @@ output$authent1 = renderUI(
     switch(input$methods,
            "Logistic regression" = sliderInput("threshold","classification Threshold",min =0, max = 1,value =0.5),
            "KNN" = sliderInput("knn","K-nearest",min = 1, max = 20,value = 4,step=1),
-    "LDA" = sliderInput("threshold","classification Threshold",min =0, max = 1,value =0.5)
-    ,"Classifications trees" = sliderInput("threshold","classification Threshold",min =0, max = 1,value =0.5),
-    "Boosting" = list(
-      sliderInput("threshold","classification Threshold",min =0, max = 1,value =0.5),
-      sliderInput("tree","Number of trees to build",min =100, max = 500,value =100, step=50),
-      sliderInput("shrink","Shrinkage to apply",min =0, max = 0.1,value =0.01, step=0.001)
+           "LDA" = sliderInput("threshold","classification Threshold",min =0, max = 1,value =0.5)
+           ,"Classifications trees" = sliderInput("threshold","classification Threshold",min =0, max = 1,value =0.5),
+           "Boosting" = list(
+             sliderInput("threshold","classification Threshold",min =0, max = 1,value =0.5),
+             sliderInput("tree","Number of trees to build",min =100, max = 500,value =100, step=50),
+             sliderInput("shrink","Shrinkage to apply",min =0, max = 0.1,value =0.01, step=0.001)
+           )
     )
-  )
- 
-})
+    
+  })
   
   n_target_position = reactive({
     validate(
@@ -383,14 +377,14 @@ output$authent1 = renderUI(
   })
   
   logit.conf = reactive({
-     p = ifelse(logit.prob()<input$threshold, "0", "1")
-     confusionMatrix(as.factor(p), test_sample()$class, positive = "1")
+    p = ifelse(logit.prob()<input$threshold, "0", "1")
+    confusionMatrix(as.factor(p), test_sample()$class, positive = "1")
   })
   
-   
+  
   ###KNN
   
- 
+  
   knn.conf = reactive({
     knn = knn (resampling_train()[,-(n_target_position())],
                test_sample()[,-(n_target_position())],
@@ -398,8 +392,8 @@ output$authent1 = renderUI(
                k=input$knn)
     confusionMatrix(test_sample()[,n_target_position()], knn, positive = "1")
   })
-
-
+  
+  
   
   ####LDA courbe ROC à faire
   
@@ -413,11 +407,11 @@ output$authent1 = renderUI(
   lda.conf = reactive ({
     p = ifelse(lda.prob()<input$threshold, "0", "1")
     confusionMatrix(as.factor(p), test_sample()$class, positive = "1")
- })
-    
-
+  })
+  
+  
   ####Classification tree
- 
+  
   tree.prob = reactive({
     tree = tree(class~.,resampling_train())
     tree.class = predict (tree, newdata = test_sample())
@@ -429,31 +423,31 @@ output$authent1 = renderUI(
     confusionMatrix(as.factor(p), test_sample()$class, positive = "1")
   })
   
-   
+  
   ####Boosting courbe ROC
-
-   boosting.prob =  reactive({
-     boosting = gbm(as.character(class)~., data=resampling_train(), n.trees = input$tree, distribution = "bernoulli",shrinkage=input$shrink)
-     predict(boosting, newdata = test_sample(),type ='response', n.trees = input$tree, shrinkage=input$shrink)
-     
-   })
-     
-   boosting.conf = reactive({
-      p = ifelse(boosting.prob()<input$threshold, "0", "1")   
-      confusionMatrix(as.factor(p), test_sample()$class, positive = "1")
-   })
-   
-   
-      
+  
+  boosting.prob =  reactive({
+    boosting = gbm(as.character(class)~., data=resampling_train(), n.trees = input$tree, distribution = "bernoulli",shrinkage=input$shrink)
+    predict(boosting, newdata = test_sample(),type ='response', n.trees = input$tree, shrinkage=input$shrink)
+    
+  })
+  
+  boosting.conf = reactive({
+    p = ifelse(boosting.prob()<input$threshold, "0", "1")   
+    confusionMatrix(as.factor(p), test_sample()$class, positive = "1")
+  })
+  
+  
+  
   ####Random Forest
   
   random.conf = reactive({
-     random = randomForest(class~., resampling_train())
-     random.class = predict (random, test_sample(), type = "class")
-     confusionMatrix(random.class, test_sample()$class, positive = "1")
+    random = randomForest(class~., resampling_train())
+    random.class = predict (random, test_sample(), type = "class")
+    confusionMatrix(random.class, test_sample()$class, positive = "1")
   })
   
-
+  
   
   ####
   
@@ -467,233 +461,278 @@ output$authent1 = renderUI(
            "Classifications trees" = tree.conf(),
            "Boosting" = boosting.conf(),
            "Random Forest" = random.conf()
-           )
+    )
   })
   
   
-  
+  output$svm_perform = renderPrint({
+    
+    
+  }) #A revoir................
   
   
   
   ####################SVM PART ################################
   
   
-  output$choix_param = renderUI(
-    switch(input$selection_auto, 
-           "Non" = list(popify(el=sliderInput("cost",list("Constante de coût",icon("question-circle")), min = 1, max = 1000, value = 10),
-                               title="<b>Constante de coût</b>",content="Cet hyper-paramètre désigne un coefficient de pénalisation/paramètre de coût. Plus il est petit, plus les erreurs de classification sont moins pénalisées et l’accent est mis sur la maximisation de la marge. Plus il est grand, plus l’accent est mis sur l’absence de mauvaise classification et la marge devient plus faible.", placement="top"),
-                        popify(el=selectInput(inputId='kernel', label=list('Fonction kernel',icon("question-circle")), choices=c('linear','sigmoid','radial basis','polynomial') ,multiple = F, selected='linear'),
-                               title="<b>Fonction kernel</b>",content="Fonctions qui permettent la projection dans un espace de plus grande dimension pour trouver la solution adéquate, sans avoir à former explicitement ce nouvel espace de représentation.", placement="top")      
-                        
-           ),
-           "Oui" = list(p('Une validation croisée sera utilisée pour selectionner les hyper-paramètres'),
-                        h3(strong("Partitionnement des données")),
-                        numericInput("p_validation",label = "Pourcentage de l'échantillon de validation", min = 0, max = 1, value = 0.7, step=0.1),
-                        h3(strong("Choisissez une plage de données des paramètres pour chacune des fonctions kernels :")),
-                        p("Paramètre de coût"),
-                        sliderInput(inputId='auto_cost', label='Constante de coût', min=1, max=1000, value=c(1,2)),
-                        p("Degré de linéarité"),
-                        fluidPage(
-                          sliderInput(inputId='auto_gamma_s', label='Sigmoid', min=1, max=1000, value=c(1,2)),
-                          
-                          sliderInput(inputId='auto_gamma_p', label='Polynomial', min=1, max=1000, value=c(1,2)),
-                          
-                          sliderInput(inputId='auto_gamma_rb', label='Radial basis', min=1, max=1000, value=c(1,2))
-                          
-                          
-                        ),
-                        renderPrint ({
-                          
-                          svm_method2_s = reactive(tune(svm, class ~ . , data = resampling_train2(), 
-                                                        validation.x = resampling_validat(),
-                                                        ranges = list(gamma = seq(as.numeric(input$auto_gamma_s[1]),as.numeric(input$auto_gamma_s[2])), 
-                                                                      cost = seq(as.numeric(input$auto_cost[1]),as.numeric(input$auto_cost[2])), 
-                                                                      kernel = "sigmoid"),
-                                                        tunecontrol = tune.control(sampling = "fix")))
-                          svm_method2_s()
-                        }),
-                        
-                        renderPrint ({
-                          svm_method2_p = reactive(tune(svm, class ~ . , data = resampling_train2(), 
-                                                        validation.x = resampling_validat(),
-                                                        ranges = list(gamma = seq(as.numeric(input$auto_gamma_p[1]),as.numeric(input$auto_gamma_p[2])), 
-                                                                      cost = seq(as.numeric(input$auto_cost[1]),as.numeric(input$auto_cost[2])), 
-                                                                      kernel = "polynomial"),
-                                                        tunecontrol = tune.control(sampling = "fix")))
-                          svm_method2_p()
-                        }),
-                        
-                        renderPrint ({
-                          
-                          svm_method2_rb = reactive(tune(svm, class ~ . , data = resampling_train2(), 
-                                                         validation.x = resampling_validat(),
-                                                         ranges = list(gamma = seq(as.numeric(input$auto_gamma_rb[1]),as.numeric(input$auto_gamma_rb[2])), 
-                                                                       cost = seq(as.numeric(input$auto_cost[1]),as.numeric(input$auto_cost[2])), 
-                                                                       kernel = "radial basis"),
-                                                         tunecontrol = tune.control(sampling = "fix")))
-                          svm_method2_rb()
-                        }),
-                        
-                        renderPrint ({
-                          
-                          svm_method2_l = reactive(tune(svm, class ~ . , data = resampling_train2(), 
-                                                        validation.x = resampling_validat(),
-                                                        ranges = list(gamma = seq(as.numeric(input$auto_gamma_s[1]),as.numeric(input$auto_gamma_s[2])),
-                                                                      kernel = "linear"),
-                                                        tunecontrol = tune.control(sampling = "fix")))
-                          svm_method2_l()
-                        })
-                        
-                        
-           )
+  output$choix_param = renderUI({
+    
+    switch(input$selection_auto,
            
+           "No" = list(
+             popify(el = sliderInput(inputId = "cost",label = list("Cost parameter",icon("question-circle")), min = 1, max = 1000, value = 10),
+                    title="Cost parameter",
+                    content="This hyper-parameter designates a coefficient of penalization parameter. The smaller it is, the less the classification errors are penalized and the focus is on maximizing the margin. The larger it is, the more emphasis is placed on the absence of misclassification and the margin becomes lower.",               placement = "top"),
+             
+             popify(el = selectInput(inputId = 'kernel', label = list('Kernel function',icon("question-circle")), choices = c('linear','sigmoid','radial basis','polynomial'), selected='linear'),
+                    title = "<b>Kernel function</b>",
+                    content="Functions that allow the projection in a space of greater dimension to find the adequate hyperplane without having to know explicitly this new space of representation.", 
+                    placement="top")
+             # ,
+             # br(), br(),
+             # 
+             # actionButton("sumbit1", "Submit")
+             
+           ),
+           
+           "Yes" = list(
+             p('Cross-validation will be used to select the best model and hyper-parameters'),
+             
+             h5(strong("Choose the parameter range for the kernel functions :")),
+             
+             numericInput("tune_kfold",label = "Number of fold for Cross-validation", min = 0, max = 10, value = 5, step=1),
+             
+             popify(el = sliderInput(inputId = "auto_cost",label = list("Cost parameter",icon("question-circle")), min = 1, max = 1000, value=c(1,5)),
+                    title="Cost parameter",
+                    content="This hyper-parameter designates a coefficient of penalization parameter. The smaller it is, the less the classification errors are penalized and the focus is on maximizing the margin. The larger it is, the more emphasis is placed on the absence of misclassification and the margin becomes lower.",
+                    placement = "top"),
+             
+             popify(el = sliderInput(inputId='auto_gamma', 
+                                     label = list("Degree of linearity of the hyperplane",icon("question-circle")),
+                                     min=0, max=10, value=c(2,3),step=0.01),
+                    title = "<b>Gamma</b>", 
+                    content = "Hyper-parameter for nonlinear hyperplanes. The higher the value, the more the method adjusts to the data.",
+                    placement = "top"),
+             
+             popify(el = sliderInput(inputId='auto_degree',label = list("Polynomial degree",icon("question-circle")),
+                                     min =1, max = 30, value=c(2,5),step=1),
+                    title="<b>Degree</b>", 
+                    content ="Corresponds to the degree of polynomial used by the kernel function to find the optimal hyperplane",
+                    placement ="top")
+             # ,
+             # br(), br(),
+             # 
+             # actionButton("sumbit2", "Submit"),
+             # br(), br()
+             
+           )
     )
-  )
+  })
   
-  output$value2 = renderUI({
     
-    if ( input$selection_auto == "Non"){
+    output$best_model = renderPrint({
       
-      switch (input$kernel,
-              "sigmoid" = popify(el=sliderInput("gamma_s",label = list("Degré de linéarité de l'hyperplan",icon("question-circle")), min = 0.001, max = 10, value = 0.1),
-                                 title="<b>Gamma</b>", content ="Hyper-paramètre pour les hyperplans non linéaires. Plus sa valeur est grande plus la méthode s ajuste aux données",placement="top"),
-              
-              "polynomial" = list(popify(el=sliderInput("gamma_p",label = list("Degré de linéarité de l'hyperplan",icon("question-circle")), min = 0.001, max = 10, value = 0.1),
-                                         title="<b>Gamma</b>", content ="Hyper-paramètre pour les hyperplans non linéaires. Plus sa valeur est grande plus la méthode s ajuste aux données",placement="top"),
-                                  popify(el=sliderInput("degre_p",label = list("Degré du polynôme de la fonction kernel",icon("question-circle")), min =1, max = 30, value = 1),
-                                         title="<b>Degree</b>", content ="Correspond au degré du polynôme utilisé par la fonction kernel pour trouver l hyperplan optimal",placement="top")),
-              "radial basis" = popify(el=sliderInput("gamma_rd",label = list("Degré de linéarité de l'hyperplan",icon("question-circle")), min = 0.001, max = 10, value = 0.1),
-                                      title="<b>Gamma</b>", content ="Hyper-paramètre pour les hyperplans non linéaires. Plus sa valeur est grande plus la méthode s ajuste aux données",placement="top")
-      )
-      
-      
-      
-    }
-    else {return()}
+      if (input$selection_auto =="Yes")
+        
+      {
+        t_l = tune(svm, class ~., data = resampling_train(), 
+                     ranges = list(cost = seq(as.numeric(input$auto_cost[1]),as.numeric(input$auto_cost[2]),5), 
+                                   kernel = "linear"),
+               tunecontrol = tune.control(sampling = "cross", cross = input$tune_kfold))
+        
+        t_r = tune(svm, class ~ . , data = resampling_train(), 
+                   ranges = list(gamma = seq(input$auto_gamma[1],input$auto_gamma[2], by=0.1), 
+                                 cost = seq(as.numeric(input$auto_cost[1]),as.numeric(input$auto_cost[2]),5), 
+                                 kernel = "radial"),
+                   tunecontrol = tune.control(sampling = "cross", cross = input$tune_kfold))
+        
+        t_p = tune(svm, class ~ . , data = resampling_train(), 
+                              ranges = list(degree = seq(input$auto_degree[1],input$auto_degree[2],by=1),
+                                            gamma = seq(input$auto_gamma[1],input$auto_gamma[2], by=0.1), 
+                                            cost = seq(input$auto_cost[1],input$auto_cost[2],by=5), 
+                                            kernel = "polynomial"),
+                              tunecontrol = tune.control(sampling = "cross", cross = input$tune_kfold))
+        
+        t_s = tune(svm, class ~ . , data = resampling_train(), 
+                       ranges = list(gamma = seq(input$auto_gamma[1],input$auto_gamma[2], by=0.1), 
+                                      cost = seq(input$auto_cost[1],input$auto_cost[2],by=5), 
+                                      kernel = "sigmoid"),
+                        tunecontrol = tune.control(sampling = "cross", cross = input$tune_kfold))
+        
+        
+        
+                perf = c(Radial_Basis = t_r$best.performance, Linear = t_l$best.performance,Polynomial = t_p$best.performance, Sigmoid = t_s$best.performance)
+                
+                
+                best_mod = paste("The best model of all best models is,", names(perf)[which.min(perf)])
+                
+                result=data.frame(hyperparameter=c("Cost","Gamma","Degree","Performance"),
+                                  Polynomial=c(round(t_p$best.parameters[,3],2),round(t_p$best.parameters[,2],2), round(t_p$best.parameters[,1],2), round(t_p$best.performance,2)),
+                                  Radial_Basis=c(round(t_r$best.parameters[,2],2), round(t_r$best.parameters[,1],2),0,round(t_r$best.performance,2)),
+                                  Sigmoid=c(round(t_s$best.parameters[,2],2),round(t_s$best.parameters[,1],2),0,round(t_s$best.performance,2)),
+                                  Linear = c(round(t_s$best.parameters[,1],2),0,0,round(t_l$best.performance,2)))
+                
+                list("The best hyper-parameters and performance for each method", result, best_mod)
+                
+                
+        }})
     
-    
-  })
   
-  param_gamma = reactive(try(if(input$kernel == "sigmoid"){input$gamma_s} 
-                             else{if(input$kernel == "polynomial"){input$gamma_p} else if(input$kernel == "radial basis"){input$gamma_rd}}))
+     output$value2 = renderUI({
+       
+       if (input$selection_auto == "No"){
+         
+         switch (input$kernel,
+                 
+                 "sigmoid" = popify(el = sliderInput("gamma_s",
+                                                   label = list("Degree of linearity of the hyperplane",icon("question-circle")),
+                                                   min = 0.001, max = 10, value = 0.1),
+                                    title = "<b>Gamma</b>", 
+                                    content = "Hyper-parameter for nonlinear hyperplanes. The higher the value, the more the method adjusts to the data.",
+                                    placement = "top"),
+                 
+                 "polynomial" = list(
+                                    popify(el = sliderInput("gamma_p",label = list("Degree of linearity of the hyperplane",icon("question-circle")), 
+                                                          min = 0.001, max = 10, value = 0.1),
+                                            title = "<b>Gamma</b>",
+                                            content ="Hyper-parameter for nonlinear hyperplanes. The higher the value, the more the method adjusts to the data.",
+                                            placement = "top"),
+                                     popify(el = sliderInput("degre_p",label = list("Polynomial degree",icon("question-circle")),
+                                                              min =1, max = 30, value = 1),
+                                            title="<b>Degree</b>", 
+                                            content ="Corresponds to the degree of polynomial used by the kernel function to find the optimal hyperplane",
+                                            placement ="top")
+                                    ),
+                 "radial basis" = popify(el = sliderInput("gamma_rd",label = list("Degree of linearity of the hyperplane",icon("question-circle")), 
+                                                          min = 0.001, max = 10, value = 0.1),
+                                         title = "<b>Gamma</b>",
+                                         content = "Hyper-parameter for nonlinear hyperplanes. The higher the value, the more the method adjusts to the data.",
+                                         placement = "top")
+         )
+       
+       }
+    })
   
-  degree = reactive(input$degre_p)
+  #   param_gamma = reactive(try(if(input$kernel == "sigmoid"){input$gamma_s} 
+  #                              else{if(input$kernel == "polynomial"){input$gamma_p} else if(input$kernel == "radial basis"){input$gamma_rd}}))
+  #   
+  #   degree = reactive(input$degre_p)
+  #   
+  #   
+  #   # modele svm si choix manuel
+  #   
+  #   output$value = renderPrint({
+  #     if(input$kernel == "linear"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, cost=input$cost, type="C-classification", scale=input$scale))}
+  #     else if (input$kernel == "polynomial"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), degree = degree(), cost=input$cost, type="C-classification", scale=input$scale))}
+  #     else {method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), cost=input$cost, type="C-classification", scale=input$scale))}
+  #     
+  #     method()
+  #     
+  #   })
+  #   
+  #   output$tab_confus = renderPrint({
+  #     if(input$kernel == "linear"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, cost=input$cost, type="C-classification", scale=input$scale))}
+  #     else if (input$kernel == "polynomial"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), degree = degree(), cost=input$cost, type="C-classification", scale=input$scale))}
+  #     else {method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), cost=input$cost, type="C-classification", scale=input$scale))}
+  #     
+  #     #svm_method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, cost=input$cost, scale=input$scale, type="C-classification"))  
+  #     pred=reactive(predict(method(), test_sample()))
+  #     Conf(pred() ,test_sample()$class)
+  #     
+  #     
+  #   })
+  #   
+  #   output$roc = renderPlot ({
+  #     
+  #     if(input$kernel == "linear"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, cost=input$cost, type="C-classification", scale=input$scale))}
+  #     else if (input$kernel == "polynomial"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), degree = degree(), cost=input$cost, type="C-classification", scale=input$scale))}
+  #     else {method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), cost=input$cost, type="C-classification", scale=input$scale))}
+  #     
+  #     
+  #     pred=reactive(predict(method(), test_sample()))
+  #     predic <- prediction(predictions = as.numeric(pred()), labels = as.numeric(test_sample()$class))
+  #     perf <- performance(predic, measure = "tpr", x.measure = "fpr")
+  #     plot(perf, col=rainbow(10))
+  #     
+  #     # rocobj <- roc(response = as.numeric(test_sample()$class), predictor = as.numeric(pred))
+  #     # plot.roc(rocobj,main="pROC")
+  #     
+  #   })
+  #   
+  #   
+  #   # modele svm si choix auto
+  #   
+  #   
+  #   resampling_train2 = reactive({
+  #     n_validat = reactive(floor(input$p_validation * nrow(resampling_train())))
+  #     train2 = reactive(sample(1:nrow(resampling_train()),n_validat()))
+  #     resampling_train()[train2(),]
+  #   })
+  #   
+  #   resampling_validat = reactive({
+  #     n_validat = reactive(floor(input$p_validation * nrow(resampling_train())))
+  #     train2 = reactive(sample(1:nrow(resampling_train()),n_validat()))
+  #     resampling_train()[-train2(),]
+  #   })
   
   
-  # modele svm si choix manuel
-  
-  output$value = renderPrint({
-    if(input$kernel == "linear"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, cost=input$cost, type="C-classification", scale=input$scale))}
-    else if (input$kernel == "polynomial"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), degree = degree(), cost=input$cost, type="C-classification", scale=input$scale))}
-    else {method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), cost=input$cost, type="C-classification", scale=input$scale))}
-    
-    method()
-    
-  })
-  
-  output$tab_confus = renderPrint({
-    if(input$kernel == "linear"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, cost=input$cost, type="C-classification", scale=input$scale))}
-    else if (input$kernel == "polynomial"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), degree = degree(), cost=input$cost, type="C-classification", scale=input$scale))}
-    else {method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), cost=input$cost, type="C-classification", scale=input$scale))}
-    
-    #svm_method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, cost=input$cost, scale=input$scale, type="C-classification"))  
-    pred=reactive(predict(method(), test_sample()))
-    Conf(pred() ,test_sample()$class)
-    
-    
-  })
-  
-  output$roc = renderPlot ({
-    
-    if(input$kernel == "linear"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, cost=input$cost, type="C-classification", scale=input$scale))}
-    else if (input$kernel == "polynomial"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), degree = degree(), cost=input$cost, type="C-classification", scale=input$scale))}
-    else {method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), cost=input$cost, type="C-classification", scale=input$scale))}
-    
-    
-    pred=reactive(predict(method(), test_sample()))
-    predic <- prediction(predictions = as.numeric(pred()), labels = as.numeric(test_sample()$class))
-    perf <- performance(predic, measure = "tpr", x.measure = "fpr")
-    plot(perf, col=rainbow(10))
-    
-    # rocobj <- roc(response = as.numeric(test_sample()$class), predictor = as.numeric(pred))
-    # plot.roc(rocobj,main="pROC")
-    
-  })
   
   
-  # modele svm si choix auto
+  
+  ###########################Prevision#############################
+  # 
+  # k=reactive({
+  #   
+  #   l=list()
+  #   
+  #   
+  #   
+  #   boxlist = setdiff(names(resampling_train()),"class")
+  #   
+  #   n=length(boxlist)
+  #   
+  #   for (i in 1:n) {
+  #     
+  #     x = paste("num",i, sep="") 
+  #     l[[i]]=box(numericInput(x,"",value=NA), width = 3, background = "navy",  
+  #                title = h5(boxlist[i], style = "display:inline; font-weight:bold"),
+  #                solidHeader = TRUE ,status = "primary",collapsible = TRUE)
+  #   }
+  #   l
+  # })
+  # 
+  # output$pred = renderUI(k())
   
   
-  resampling_train2 = reactive({
-    n_validat = reactive(floor(input$p_validation * nrow(resampling_train())))
-    train2 = reactive(sample(1:nrow(resampling_train()),n_validat()))
-    resampling_train()[train2(),]
-  })
   
-  resampling_validat = reactive({
-    n_validat = reactive(floor(input$p_validation * nrow(resampling_train())))
-    train2 = reactive(sample(1:nrow(resampling_train()),n_validat()))
-    resampling_train()[-train2(),]
-  })
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+})
 
-  
-  
-  
-  
-###########################Prevision#############################
-  
-  k=reactive({
-    
-    l=list()
-    
-    
-    
-    boxlist = setdiff(names(resampling_train()),"class")
-    
-    n=length(boxlist)
-    
-    for (i in 1:n) {
-      
-      x = paste("num",i, sep="") 
-      l[[i]]=box(numericInput(x,"",value=NA), width = 3, background = "navy",  
-                 title = h5(boxlist[i], style = "display:inline; font-weight:bold"),
-                 solidHeader = TRUE ,status = "primary",collapsible = TRUE)
-    }
-    l
-  })
-  
-  output$pred = renderUI(k())
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-   
-    
-  })
-  
