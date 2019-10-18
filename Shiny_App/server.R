@@ -484,7 +484,7 @@ shinyServer(function(input, output, session) {
                     title="Cost parameter",
                     content="This hyper-parameter designates a coefficient of penalization parameter. The smaller it is, the less the classification errors are penalized and the focus is on maximizing the margin. The larger it is, the more emphasis is placed on the absence of misclassification and the margin becomes lower.",               placement = "top"),
              
-             popify(el = selectInput(inputId = 'kernel', label = list('Kernel function',icon("question-circle")), choices = c('linear','sigmoid','radial basis','polynomial'), selected='linear'),
+             popify(el = selectInput(inputId = 'kernel', label = list('Kernel function',icon("question-circle")), choices = c('linear','sigmoid','radial','polynomial'), selected='linear'),
                     title = "<b>Kernel function</b>",
                     content="Functions that allow the projection in a space of greater dimension to find the adequate hyperplane without having to know explicitly this new space of representation.", 
                     placement="top")
@@ -603,7 +603,7 @@ shinyServer(function(input, output, session) {
                                             content ="Corresponds to the degree of polynomial used by the kernel function to find the optimal hyperplane",
                                             placement ="top")
                                     ),
-                 "radial basis" = popify(el = sliderInput("gamma_rd",label = list("Degree of linearity of the hyperplane",icon("question-circle")), 
+                 "radial" = popify(el = sliderInput("gamma_rd",label = list("Degree of linearity of the hyperplane",icon("question-circle")), 
                                                           min = 0.001, max = 10, value = 0.1),
                                          title = "<b>Gamma</b>",
                                          content = "Hyper-parameter for nonlinear hyperplanes. The higher the value, the more the method adjusts to the data.",
@@ -613,28 +613,97 @@ shinyServer(function(input, output, session) {
        }
     })
   
-  #   param_gamma = reactive(try(if(input$kernel == "sigmoid"){input$gamma_s} 
-  #                              else{if(input$kernel == "polynomial"){input$gamma_p} else if(input$kernel == "radial basis"){input$gamma_rd}}))
-  #   
-  #   degree = reactive(input$degre_p)
-  #   
-  #   
-  #   # modele svm si choix manuel
-  #   
-  #   output$value = renderPrint({
-  #     if(input$kernel == "linear"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, cost=input$cost, type="C-classification", scale=input$scale))}
-  #     else if (input$kernel == "polynomial"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), degree = degree(), cost=input$cost, type="C-classification", scale=input$scale))}
-  #     else {method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), cost=input$cost, type="C-classification", scale=input$scale))}
-  #     
-  #     method()
-  #     
-  #   })
-  #   
-  #   output$tab_confus = renderPrint({
-  #     if(input$kernel == "linear"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, cost=input$cost, type="C-classification", scale=input$scale))}
-  #     else if (input$kernel == "polynomial"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), degree = degree(), cost=input$cost, type="C-classification", scale=input$scale))}
-  #     else {method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), cost=input$cost, type="C-classification", scale=input$scale))}
-  #     
+     
+  ##### Param if No is chosen #####
+     
+    gamma_degree = reactive(if (input$selection_auto == "No")
+                            { 
+                               try ({
+                                 
+                                 if (input$kernel == "sigmoid") { input$gamma_s } 
+                                 
+                                 else if (input$kernel == "polynomial") { x = c(input$gamma_p,input$degre_p) ; x }
+                                 
+                                 else if (input$kernel == "radial") { input$gamma_rd }
+                                 
+                                 }, silent = TRUE)
+                            }
+                          )
+     
+  ############ modele svm si choix manuel  ############  
+     
+     model_svm = reactive({
+       
+       if (input$selection_auto == "No")
+       {
+          gamma = gamma_degree()[1]
+          degree = gamma_degree()[2] 
+             
+           if (input$kernel == "linear") 
+           {
+              svm(class ~., data = resampling_train(), 
+                  kernel = input$kernel, cost = input$cost, 
+                  type = "C-classification", scale = input$scale)
+           }
+           
+           else if (input$kernel == "polynomial")
+           {
+                svm(class ~., data = resampling_train(),
+                    kernel = input$kernel, gamma = gamma , 
+                    degree = degree, cost = input$cost,
+                    type = "C-classification", scale = input$scale)
+           }
+           
+           else  
+           {
+                svm(class ~., data = resampling_train(),
+                    kernel = input$kernel, gamma = gamma, cost = input$cost, 
+                    type = "C-classification", scale = input$scale)
+           }
+       }
+     })
+     
+     
+     output$value = renderPrint({  
+       # changer la position de la sortie en la mettant sous "Choice of parameter"
+       
+       if (input$selection_auto == "No")
+       {
+         gamma = gamma_degree()[1]
+         degree = gamma_degree()[2] 
+         
+         if (input$kernel == "linear") 
+         {
+           list (paste ("Number of Support Vectors:", model_svm()$tot.nSV), 
+                 paste ("cost:", model_svm()$cost))
+         }
+         
+         else if (input$kernel == "polynomial")
+         {
+           list (paste ("Number of Support Vectors:", model_svm()$tot.nSV), 
+                 paste ("cost:", model_svm()$cost),
+                 paste ("Gamma:", model_svm()$gamma),
+                 paste ("Degree:", model_svm()$degree))
+         }
+         
+         else  
+         {
+           list (paste ("Number of Support Vectors:", model_svm()$tot.nSV), 
+                 paste ("cost:", model_svm()$cost),
+                 paste ("Gamma:", model_svm()$gamma))
+         }
+       }
+       
+     })
+     
+     # output$tab_confus = renderPrint({
+     #   if(input$kernel == "linear"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, cost=input$cost, type="C-classification", scale=input$scale))}
+     #   else if (input$kernel == "polynomial"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), degree = degree(), cost=input$cost, type="C-classification", scale=input$scale))}
+     #   else {method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), cost=input$cost, type="C-classification", scale=input$scale))}
+     # 
+     #   
+       
+         
   #     #svm_method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, cost=input$cost, scale=input$scale, type="C-classification"))  
   #     pred=reactive(predict(method(), test_sample()))
   #     Conf(pred() ,test_sample()$class)
@@ -660,9 +729,13 @@ shinyServer(function(input, output, session) {
   #   })
   #   
   #   
+     
   #   # modele svm si choix auto
   #   
-  #   
+  #
+     
+     
+     ####AAAAA SUPPPRIMMMERRRRRRRRRRRRRR################"""
   #   resampling_train2 = reactive({
   #     n_validat = reactive(floor(input$p_validation * nrow(resampling_train())))
   #     train2 = reactive(sample(1:nrow(resampling_train()),n_validat()))
