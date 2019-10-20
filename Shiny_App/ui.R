@@ -15,17 +15,13 @@ library(dplyr)
 library(corrplot)
 library(haven)
 library(readxl)
-library(shinydashboard)
-library(DescTools)
-library(plotly)
 library(shinydashboardPlus)
+library(shinydashboard)
 library(randomForest)
-library (class)
 library(tree)
 library(gbm)
 library(caret)
 library(pROC)
-library(ROCR)
 library(shinyBS)
 
 
@@ -201,22 +197,20 @@ shinyUI(
                                   tabPanel("Implementation and results",
                                            sidebarLayout(
                                              box(
-                                               h3(strong("Choice of parameters")), br(),
+                                               h4(strong("Hyper-parameters choices")), 
                                                checkboxInput(inputId = 'scale', label = 'Check if the data is not centered and reduced',value=FALSE),
-                                               radioButtons(inputId = 'selection_auto', label = 'Do you want to use automatic parameter selection with cross-validation?',choices=c('Yes', 'No') ,selected='Yes',inline=TRUE),
+                                               radioButtons(inputId = 'selection_auto', label = 'Do you want to use automatic parameter selection with cross-validation?',choices=c('Yes', 'No'),inline=TRUE),
                                                bsPopover(id="selection_auto",title="Cross validation", content="If yes, optimization of the choice of hyper-parameters in order to avoid over-learning, cross validation will be used to find the best model and hyper-parameters.",placement="left"),
                                                uiOutput("choix_param"),
                                                uiOutput("value2"),
-                                               
-                                               verbatimTextOutput("best_model"),
+                                               verbatimTextOutput("value"),
+                                              # verbatimTextOutput("best_model"),
                                                
                                                title="Implementation",status = "primary", solidHeader = TRUE,collapsible = TRUE, width = 6),
-                                             box(verbatimTextOutput("value"),
-                                                 h3(strong("Confusion matrix")),
+                                             box(
                                                  verbatimTextOutput("tab_confus"),
-                                                 h3(strong("ROC Curve")),
+                                                 br(),
                                                  plotOutput("roc"),
-                                                 h3(strong("Gini index")),
                                                  title="Performance",status = "primary", solidHeader = TRUE,collapsible = TRUE, width = 6)
                                            )
                                   )  
@@ -235,25 +229,37 @@ shinyUI(
                                        column(width=6, box(verbatimTextOutput("svm_perform"), background = "navy", width = 12, title="SVM Performance", solidHeader = TRUE , status = "primary", collapsible = TRUE))
                                      ),
                                      fluidRow(
-                                       column(width=6, box(plotOutput("roc_curve"), background = "navy", width = 12, title="Roc Curve", solidHeader = TRUE ,status = "primary",collapsible = TRUE)),
-                                       column(width=6,
-                                              box(plotOutput ("gini"),
-                                                  background = "navy",width = 12, title="Gini Index",solidHeader = TRUE ,status = "primary",collapsible = TRUE))
+                                       column(width=6, box(plotOutput("roc_curve"), background = "navy", width = 12, title="Roc Curve", solidHeader = TRUE ,status = "primary",collapsible = TRUE))#,
+                                       # column(width=6,
+                                       #        box(plotOutput ("gini"),
+                                       #            background = "navy",width = 12, title="Gini Index",solidHeader = TRUE ,status = "primary",collapsible = TRUE))
                                      ), width = 9)
                                      
-                                   )),
-                          tabPanel("Benchmarking2")
+                          ))#,
+                          # tabPanel("Benchmarking2")
                           
                   )
                   
                 )),
         tabItem(tabName = "prediction",
                 fluidPage(
-                  selectInput("select_predict","Please Choose one way !",c("Load external data", "Enter data")),
-                  box(uiOutput("pred"))
                   
+                  fluidRow(
+                    column(width=6,
+                           
+                           box(selectInput("select_predict","Please Choose one way !",
+                                           c("Load external data", "Enter data"),uiOutput("select_pred"))
+                               
+                           ))),
                   
-                )),
+                  fluidRow(
+                    column(width=12,
+                           uiOutput("box_pred"),
+                           uiOutput("pred")
+                           
+                    )
+                    
+                  ))),
         tabItem(tabName = "sample",
                 fluidPage(
                   numericInput("select_train","Training proportion",min=0, max=1, value=0.7, step=0.01),
@@ -267,7 +273,7 @@ shinyUI(
     ),
     rightsidebar = rightSidebar(titlePanel(h4("Connected")), helpText(br(),h4(strong("You are authentified as"))),htmlOutput("authent")),
     footer = dashboardFooter(
-      left_text = h6("© GROUP AKS OF MASTER ESA -Any reproduction, even partial, of the page is strictly forbidden"),
+      left_text = h6("© GROUP AKS OF MASTER ESA - Any reproduction, even partial, of the page is strictly forbidden"),
       right_text = h6("ORLEANS 2019")
     ),
     

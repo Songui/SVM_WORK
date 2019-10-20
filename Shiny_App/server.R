@@ -4,10 +4,9 @@
 #On doit permettre à l'utilisateur de faire entrer la variable target y
 #######The minority class must be coded 1 and the majority 0 for the unbalanced family function ??? #####
 ####### We should imposed that the class have to be the last one of the data column and called "class" ?? #####
-library (MASS )
-library(class)
+
+library(MASS)
 library(FNN)
-library(shiny)
 library(summarytools)
 library(DescTools)
 library(smotefamily)
@@ -18,9 +17,8 @@ library(dplyr)
 library(corrplot)
 library(haven)
 library(readxl)
+library(shiny)
 library(shinydashboard)
-library(DescTools)
-library(plotly)
 library(shinydashboardPlus)
 library(randomForest)
 library (class)
@@ -28,8 +26,7 @@ library(tree)
 library(gbm)
 library(caret)
 library(pROC)
-library(ROCR)
-library(shinyBS)
+library(e1071)
 
 Logged = FALSE
 
@@ -318,7 +315,7 @@ shinyServer(function(input, output, session) {
     dup_size = try(floor(input$dup_size),silent = T)
     k_near = try(floor(input$k_near),silent = T)
     
-    dat= switch(input$select_sampling,
+    dat = switch(input$select_sampling,
                 "Oversampling" = oversampling(train_sample,p1,y_position) ,
                 "Undersampling" = undersampling(train_sample,p2,y_position) ,
                 "SMOTE" = {s = SMOTE(train_sample[,-y_position],y, dup_size=dup_size, K= k_near)$data 
@@ -342,137 +339,9 @@ shinyServer(function(input, output, session) {
   
   output$out = renderDataTable(resampling_train(), options = list(scrollX = TRUE)) 
   
-  output$method_param = renderUI ({
-    
-    if(is.null(data())) {return()}
-    
-    switch(input$methods,
-           "Logistic regression" = sliderInput("threshold","classification Threshold",min =0, max = 1,value =0.5),
-           "KNN" = sliderInput("knn","K-nearest",min = 1, max = 20,value = 4,step=1),
-           "LDA" = sliderInput("threshold","classification Threshold",min =0, max = 1,value =0.5)
-           ,"Classifications trees" = sliderInput("threshold","classification Threshold",min =0, max = 1,value =0.5),
-           "Boosting" = list(
-             sliderInput("threshold","classification Threshold",min =0, max = 1,value =0.5),
-             sliderInput("tree","Number of trees to build",min =100, max = 500,value =100, step=50),
-             sliderInput("shrink","Shrinkage to apply",min =0, max = 0.1,value =0.01, step=0.001)
-           )
-    )
-    
-  })
-  
-  n_target_position = reactive({
-    validate(
-      need(is.null(resampling_train()) == FALSE, "Please select a file")
-    )
-    which(names(resampling_train()) == "class")
-    
-  })
   
   
-  ##LOGIT courbe roc
-  
-  logit.prob = reactive ({
-    logit = glm(class~.,data = resampling_train(),family = binomial)
-    logit.prob = predict(logit, newdata = test_sample(), type = "response")
-  })
-  
-  logit.conf = reactive({
-    p = ifelse(logit.prob()<input$threshold, "0", "1")
-    confusionMatrix(as.factor(p), test_sample()$class, positive = "1")
-  })
-  
-  
-  ###KNN
-  
-  
-  knn.conf = reactive({
-    knn = knn (resampling_train()[,-(n_target_position())],
-               test_sample()[,-(n_target_position())],
-               resampling_train()[,n_target_position()],
-               k=input$knn)
-    confusionMatrix(test_sample()[,n_target_position()], knn, positive = "1")
-  })
-  
-  
-  
-  ####LDA courbe ROC à faire
-  
-  
-  lda.prob = reactive ({
-    lda = lda(class~.,data = resampling_train())
-    lda.pred = predict(lda, newdata = test_sample())
-    lda.pred$posterior[,"1"]
-  })
-  
-  lda.conf = reactive ({
-    p = ifelse(lda.prob()<input$threshold, "0", "1")
-    confusionMatrix(as.factor(p), test_sample()$class, positive = "1")
-  })
-  
-  
-  ####Classification tree
-  
-  tree.prob = reactive({
-    tree = tree(class~.,resampling_train())
-    tree.class = predict (tree, newdata = test_sample())
-    tree.class[,"1"]
-  })
-  
-  tree.conf = reactive({
-    p = ifelse(tree.prob()<input$threshold, "0", "1")
-    confusionMatrix(as.factor(p), test_sample()$class, positive = "1")
-  })
-  
-  
-  ####Boosting courbe ROC
-  
-  boosting.prob =  reactive({
-    boosting = gbm(as.character(class)~., data=resampling_train(), n.trees = input$tree, distribution = "bernoulli",shrinkage=input$shrink)
-    predict(boosting, newdata = test_sample(),type ='response', n.trees = input$tree, shrinkage=input$shrink)
-    
-  })
-  
-  boosting.conf = reactive({
-    p = ifelse(boosting.prob()<input$threshold, "0", "1")   
-    confusionMatrix(as.factor(p), test_sample()$class, positive = "1")
-  })
-  
-  
-  
-  ####Random Forest
-  
-  random.conf = reactive({
-    random = randomForest(class~., resampling_train())
-    random.class = predict (random, test_sample(), type = "class")
-    confusionMatrix(random.class, test_sample()$class, positive = "1")
-  })
-  
-  
-  
-  ####
-  
-  output$confusion = renderPrint({
-    
-    switch(input$methods,
-           "Logistic regression" = logit.conf(),
-           "KNN" = knn.conf(),
-           "LDA" = lda.conf(),
-           "QDA" = qda.conf(),
-           "Classifications trees" = tree.conf(),
-           "Boosting" = boosting.conf(),
-           "Random Forest" = random.conf()
-    )
-  })
-  
-  
-  output$svm_perform = renderPrint({
-    
-    
-  }) #A revoir................
-  
-  
-  
-  ####################SVM PART ################################
+  #################### SVM PART ########################
   
   
   output$choix_param = renderUI({
@@ -488,11 +357,7 @@ shinyServer(function(input, output, session) {
                     title = "<b>Kernel function</b>",
                     content="Functions that allow the projection in a space of greater dimension to find the adequate hyperplane without having to know explicitly this new space of representation.", 
                     placement="top")
-             # ,
-             # br(), br(),
-             # 
-             # actionButton("sumbit1", "Submit")
-             
+            
            ),
            
            "Yes" = list(
@@ -519,68 +384,63 @@ shinyServer(function(input, output, session) {
                     title="<b>Degree</b>", 
                     content ="Corresponds to the degree of polynomial used by the kernel function to find the optimal hyperplane",
                     placement ="top")
-             # ,
-             # br(), br(),
-             # 
-             # actionButton("sumbit2", "Submit"),
-             # br(), br()
-             
+            
            )
     )
   })
   
+  
+  result = reactive({
     
-    output$best_model = renderPrint({
-      
       if (input$selection_auto =="Yes")
         
       {
-        t_l = tune(svm, class ~., data = resampling_train(), 
+          t_l = tune(svm, class ~., data = resampling_train(), 
                      ranges = list(cost = seq(as.numeric(input$auto_cost[1]),as.numeric(input$auto_cost[2]),5), 
                                    kernel = "linear"),
-               tunecontrol = tune.control(sampling = "cross", cross = input$tune_kfold))
-        
-        t_r = tune(svm, class ~ . , data = resampling_train(), 
-                   ranges = list(gamma = seq(input$auto_gamma[1],input$auto_gamma[2], by=0.1), 
-                                 cost = seq(as.numeric(input$auto_cost[1]),as.numeric(input$auto_cost[2]),5), 
-                                 kernel = "radial"),
-                   tunecontrol = tune.control(sampling = "cross", cross = input$tune_kfold))
-        
-        t_p = tune(svm, class ~ . , data = resampling_train(), 
-                              ranges = list(degree = seq(input$auto_degree[1],input$auto_degree[2],by=1),
-                                            gamma = seq(input$auto_gamma[1],input$auto_gamma[2], by=0.1), 
-                                            cost = seq(input$auto_cost[1],input$auto_cost[2],by=5), 
-                                            kernel = "polynomial"),
-                              tunecontrol = tune.control(sampling = "cross", cross = input$tune_kfold))
-        
-        t_s = tune(svm, class ~ . , data = resampling_train(), 
-                       ranges = list(gamma = seq(input$auto_gamma[1],input$auto_gamma[2], by=0.1), 
-                                      cost = seq(input$auto_cost[1],input$auto_cost[2],by=5), 
-                                      kernel = "sigmoid"),
-                        tunecontrol = tune.control(sampling = "cross", cross = input$tune_kfold))
-        
-        
-        
-                perf = c(Radial_Basis = t_r$best.performance, Linear = t_l$best.performance,Polynomial = t_p$best.performance, Sigmoid = t_s$best.performance)
-                
-                
-                best_mod = paste("The best model of all best models is,", names(perf)[which.min(perf)])
-                
-                result=data.frame(hyperparameter=c("Cost","Gamma","Degree","Performance"),
-                                  Polynomial=c(round(t_p$best.parameters[,3],2),round(t_p$best.parameters[,2],2), round(t_p$best.parameters[,1],2), round(t_p$best.performance,2)),
-                                  Radial_Basis=c(round(t_r$best.parameters[,2],2), round(t_r$best.parameters[,1],2),0,round(t_r$best.performance,2)),
-                                  Sigmoid=c(round(t_s$best.parameters[,2],2),round(t_s$best.parameters[,1],2),0,round(t_s$best.performance,2)),
-                                  Linear = c(round(t_s$best.parameters[,1],2),0,0,round(t_l$best.performance,2)))
-                
-                list("The best hyper-parameters and performance for each method", result, best_mod)
-                
-                
-        }})
-    
+                     tunecontrol = tune.control(sampling = "cross", cross = input$tune_kfold),
+                     tolerance = 0.01)
+          
+          t_r = tune(svm, class ~., data = resampling_train(), 
+                     ranges = list(gamma = seq(input$auto_gamma[1],input$auto_gamma[2], by=0.1), 
+                                   cost = seq(as.numeric(input$auto_cost[1]),as.numeric(input$auto_cost[2]),5), 
+                                   kernel = "radial"),
+                     tunecontrol = tune.control(sampling = "cross", cross = input$tune_kfold),
+                     tolerance = 0.01)
+          
+          t_p = tune(svm, class ~., data = resampling_train(), 
+                     ranges = list(degree = seq(input$auto_degree[1],input$auto_degree[2],by=1),
+                                   gamma = seq(input$auto_gamma[1],input$auto_gamma[2], by=0.1), 
+                                   cost = seq(input$auto_cost[1],input$auto_cost[2],by=5), 
+                                   kernel = "polynomial"),
+                     tunecontrol = tune.control(sampling = "cross", cross = input$tune_kfold),
+                     tolerance = 0.01)
+          
+          t_s = tune(svm, class ~., data = resampling_train(), 
+                     ranges = list(gamma = seq(input$auto_gamma[1],input$auto_gamma[2], by=0.1), 
+                                   cost = seq(input$auto_cost[1],input$auto_cost[2],by=5), 
+                                   kernel = "sigmoid"),
+                     tunecontrol = tune.control(sampling = "cross", cross = input$tune_kfold),
+                     tolerance = 0.01)
+          
+            
+              data.frame(hyperparameter=c("Cost       ","Gamma      ","Degree     ","Performance", " ", "The best model","The Number of"),
+                         Polynomial=c(round(t_p$best.parameters[,3],2),round(t_p$best.parameters[,2],2), round(t_p$best.parameters[,1],2), round(t_p$best.performance,2)," ","of all model is", "supports vectors:"),
+                         Linear = c(round(t_s$best.parameters[,1],2),0,0,round(t_l$best.performance,2)," ", " ", " "),
+                         Radial=c(round(t_r$best.parameters[,2],2), round(t_r$best.parameters[,1],2),0,round(t_r$best.performance,2)," "," "," "),
+                         Sigmoid=c(round(t_s$best.parameters[,2],2),round(t_s$best.parameters[,1],2),0,round(t_s$best.performance,2)," "," "," "),
+                         stringsAsFactors = FALSE
+                         )
+      }    
+      
+    })
   
-     output$value2 = renderUI({
+  
+    
+    output$value2 = renderUI({
        
-       if (input$selection_auto == "No"){
+       if (input$selection_auto == "No")
+         {
          
          switch (input$kernel,
                  
@@ -614,8 +474,6 @@ shinyServer(function(input, output, session) {
     })
   
      
-  ##### Param if No is chosen #####
-     
     gamma_degree = reactive(if (input$selection_auto == "No")
                             { 
                                try ({
@@ -630,182 +488,373 @@ shinyServer(function(input, output, session) {
                             }
                           )
      
-  ############ modele svm si choix manuel  ############  
      
      model_svm = reactive({
        
-       if (input$selection_auto == "No")
+       if (input$selection_auto == "Yes")
        {
-          gamma = gamma_degree()[1]
-          degree = gamma_degree()[2] 
-             
-           if (input$kernel == "linear") 
-           {
-              svm(class ~., data = resampling_train(), 
-                  kernel = input$kernel, cost = input$cost, 
-                  type = "C-classification", scale = input$scale)
-           }
-           
-           else if (input$kernel == "polynomial")
-           {
-                svm(class ~., data = resampling_train(),
-                    kernel = input$kernel, gamma = gamma , 
-                    degree = degree, cost = input$cost,
-                    type = "C-classification", scale = input$scale)
-           }
-           
-           else  
-           {
-                svm(class ~., data = resampling_train(),
-                    kernel = input$kernel, gamma = gamma, cost = input$cost, 
-                    type = "C-classification", scale = input$scale)
-           }
+         min_error_position = which.min(result()[4,2:5])+1
+         
+         best_parameter = result()[1:3,min_error_position]
+         
+         result_col_names = names(result())
+         
+         kernel = tolower(result_col_names[min_error_position])
+         
+         svm(class ~., data = resampling_train(),
+             kernel = kernel, cost = best_parameter[1],
+             gamma = best_parameter[2], degree = best_parameter[3],
+             type = "C-classification", scale = input$scale)
        }
-     })
-     
-     
-     output$value = renderPrint({  
-       # changer la position de la sortie en la mettant sous "Choice of parameter"
-       
-       if (input$selection_auto == "No")
+       else
        {
          gamma = gamma_degree()[1]
          degree = gamma_degree()[2] 
          
          if (input$kernel == "linear") 
          {
-           list (paste ("Number of Support Vectors:", model_svm()$tot.nSV), 
-                 paste ("cost:", model_svm()$cost))
+           svm(class ~., data = resampling_train(), 
+               kernel = input$kernel, cost = input$cost, 
+               type = "C-classification", scale = input$scale,
+               tolerance = 0.01)
          }
          
          else if (input$kernel == "polynomial")
          {
-           list (paste ("Number of Support Vectors:", model_svm()$tot.nSV), 
-                 paste ("cost:", model_svm()$cost),
-                 paste ("Gamma:", model_svm()$gamma),
-                 paste ("Degree:", model_svm()$degree))
+           svm(class ~., data = resampling_train(),
+               kernel = input$kernel, gamma = gamma , 
+               degree = degree, cost = input$cost,
+               type = "C-classification", scale = input$scale,
+               tolerance = 0.01)
          }
          
          else  
          {
-           list (paste ("Number of Support Vectors:", model_svm()$tot.nSV), 
-                 paste ("cost:", model_svm()$cost),
-                 paste ("Gamma:", model_svm()$gamma))
-         }
+           svm(class ~., data = resampling_train(),
+               kernel = input$kernel, gamma = gamma, cost = input$cost, 
+               type = "C-classification", scale = input$scale,
+               tolerance = 0.01)
+         } 
        }
        
      })
      
-     # output$tab_confus = renderPrint({
-     #   if(input$kernel == "linear"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, cost=input$cost, type="C-classification", scale=input$scale))}
-     #   else if (input$kernel == "polynomial"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), degree = degree(), cost=input$cost, type="C-classification", scale=input$scale))}
-     #   else {method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), cost=input$cost, type="C-classification", scale=input$scale))}
-     # 
+     # output$best_model = renderPrint({
      #   
+     #   if (input$selection_auto =="Yes")
+     #     
+     #   {
+     #     best_mod =  names(result())[which.min(result()[4,2:5])+1]
+           # result = result()
+           # result[6,3] = best_mod 
+           # result[7,3] = model_svm()$tot.nSV
+           # result
+     #     
+     #   }})
+     
+     
+     output$value = renderPrint({  
+
+      try(
+        {
+            if (input$selection_auto == "No")
+           {
+             gamma = gamma_degree()[1]
+             degree = gamma_degree()[2] 
+             
+             if (input$kernel == "linear") 
+             {
+               list (paste ("Number of Support Vectors:", model_svm()$tot.nSV), 
+                     paste ("cost:", model_svm()$cost))
+             }
+             
+             else if (input$kernel == "polynomial")
+             {
+               list (paste ("Number of Support Vectors:", model_svm()$tot.nSV), 
+                     paste ("cost:", model_svm()$cost),
+                     paste ("Gamma:", model_svm()$gamma),
+                     paste ("Degree:", model_svm()$degree))
+             }
+             
+             else  
+             {
+               list (paste ("Number of Support Vectors:", model_svm()$tot.nSV), 
+                     paste ("cost:", model_svm()$cost),
+                     paste ("Gamma:", model_svm()$gamma))
+             }
+            }
+          else
+          {
+                 best_mod =  names(result())[which.min(result()[4,2:5])+1]
+                 result = result()
+                 result[6,3] = best_mod 
+                 result[7,3] = model_svm()$tot.nSV
+                 result
+              }
+          
+         } , silent = TRUE)
        
+     })
+     
+     
+     prediction_svm = reactive({
+       try( predict(model_svm(), test_sample()), silent = TRUE)
+       })
+     
+      output$tab_confus = renderPrint({
+       
+         try(confusionMatrix (prediction_svm(), test_sample()$class, positive = "1"),
+             silent = TRUE)  
+     })
+  
          
-  #     #svm_method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, cost=input$cost, scale=input$scale, type="C-classification"))  
-  #     pred=reactive(predict(method(), test_sample()))
-  #     Conf(pred() ,test_sample()$class)
-  #     
-  #     
-  #   })
-  #   
-  #   output$roc = renderPlot ({
-  #     
-  #     if(input$kernel == "linear"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, cost=input$cost, type="C-classification", scale=input$scale))}
-  #     else if (input$kernel == "polynomial"){method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), degree = degree(), cost=input$cost, type="C-classification", scale=input$scale))}
-  #     else {method = reactive(svm(class ~ . , data=resampling_train(), kernel=input$kernel, gamma = param_gamma(), cost=input$cost, type="C-classification", scale=input$scale))}
-  #     
-  #     
-  #     pred=reactive(predict(method(), test_sample()))
-  #     predic <- prediction(predictions = as.numeric(pred()), labels = as.numeric(test_sample()$class))
-  #     perf <- performance(predic, measure = "tpr", x.measure = "fpr")
-  #     plot(perf, col=rainbow(10))
-  #     
-  #     # rocobj <- roc(response = as.numeric(test_sample()$class), predictor = as.numeric(pred))
-  #     # plot.roc(rocobj,main="pROC")
-  #     
-  #   })
-  #   
-  #   
+      
+     output$roc = renderPlot ({
+      
+         svm_roc = roc(as.numeric(test_sample()$class), as.numeric(prediction_svm()))
+         
+         svm_roc_plot = ggroc(svm_roc, legacy.axes = TRUE, alpha = 1, colour = "tomato", size = 1) + 
+           xlab("False Positive Rate") + ylab("True Positive Rate") + 
+           ggtitle("SVM ROC CURVE") +
+           geom_segment(aes(x = 0, xend = 1, y = 0, yend = 1), color="darkgrey", linetype="dashed") +
+           annotate("text", x = 0.9, y = 0.2, label = paste("AUC =",sprintf("%.3f",svm_roc$auc)),colour="tomato",size=4)
+         svm_roc_plot
+       
+     })
      
-  #   # modele svm si choix auto
-  #   
-  #
+    
+  #########################Benchmarking##########################
+    
+    output$method_param = renderUI ({
+      
+      if(is.null(data())) {return()}
+      
+      switch(input$methods,
+             "Logistic regression" = sliderInput("threshold","classification Threshold",min =0, max = 1,value =0.5),
+             "KNN" = sliderInput("knn","K-nearest",min = 1, max = 20,value = 4,step=1),
+             "LDA" = sliderInput("threshold","classification Threshold",min =0, max = 1,value =0.5)
+             ,"Classifications trees" = sliderInput("threshold","classification Threshold",min =0, max = 1,value =0.5),
+             "Boosting" = list(
+               sliderInput("threshold","classification Threshold",min =0, max = 1,value =0.5),
+               sliderInput("tree","Number of trees to build",min =100, max = 500,value =100, step=50),
+               sliderInput("shrink","Shrinkage to apply",min =0, max = 0.1,value =0.01, step=0.001)
+             )
+      )
+      
+    })
+    
+    n_target_position = reactive({
+      validate(
+        need(is.null(resampling_train()) == FALSE, "Please select a file")
+      )
+      which(names(resampling_train()) == "class")
+      
+    })
+    
+    
+    
+    
+    ##LOGIT 
+    
+    logit.prob = reactive ({
+      logit = glm(class~.,data = resampling_train(),family = binomial)
+      logit.prob = predict(logit, newdata = test_sample(), type = "response")
+    })
+    
+    logit.conf = reactive({
+      p = ifelse(logit.prob()<input$threshold, "0", "1")
+      confusionMatrix(as.factor(p), test_sample()$class, positive = "1")
+    })
+    
+    
+    ###KNN
+    
+    
+    knn.conf = reactive({
+      knn = knn (resampling_train()[,-(n_target_position())],
+                 test_sample()[,-(n_target_position())],
+                 resampling_train()[,n_target_position()],
+                 k=input$knn)
+      confusionMatrix(knn, test_sample()[,n_target_position()], positive = "1")
+    })
+    
+    
+    
+    ####LDA 
+    
+    
+    lda.prob = reactive ({
+      lda = lda(class~.,data = resampling_train())
+      lda.pred = predict(lda, newdata = test_sample())
+      lda.pred$posterior[,"1"]
+    })
+    
+    lda.conf = reactive ({
+      p = ifelse(lda.prob()<input$threshold, "0", "1")
+      confusionMatrix(as.factor(p), test_sample()$class, positive = "1")
+    })
+    
+    
+    ####Classification tree
+    
+    tree.prob = reactive({
+      tree = tree(class~.,resampling_train())
+      tree.class = predict (tree, newdata = test_sample())
+      tree.class[,"1"]
+    })
+    
+    tree.conf = reactive({
+      p = ifelse(tree.prob()<input$threshold, "0", "1")
+      confusionMatrix(as.factor(p), test_sample()$class, positive = "1")
+    })
+    
+    
+    ####Boosting
+    
+    boosting.prob =  reactive({
+      boosting = gbm(as.character(class)~., data=resampling_train(), n.trees = input$tree, distribution = "bernoulli",shrinkage=input$shrink)
+      predict(boosting, newdata = test_sample(),type ='response', n.trees = input$tree, shrinkage=input$shrink)
+      
+    })
+    
+    boosting.conf = reactive({
+      p = ifelse(boosting.prob()<input$threshold, "0", "1")   
+      confusionMatrix(as.factor(p), test_sample()$class, positive = "1")
+    })
+    
+    
+    
+    ####Random Forest
+    
+    random.conf = reactive({
+      random = randomForest(class~., resampling_train())
+      random.class = predict (randomForest(class~., resampling_train()), test_sample(), type = "class")
+      confusionMatrix(random.class, test_sample()$class, positive = "1")
+    })
+    
+
+    bench_prediction = reactive({
+      
+      try(
+        {
+          switch(input$methods,
+                 "Logistic regression" = ifelse(logit.prob()<input$threshold, "0", "1") ,
+                 "KNN" = knn (resampling_train()[,-(n_target_position())],
+                              test_sample()[,-(n_target_position())],
+                              resampling_train()[,n_target_position()],
+                              k=input$knn),
+                 "LDA" = ifelse(lda.prob()<input$threshold, "0", "1"),
+                 "Classifications trees" = ifelse(tree.prob()<input$threshold, "0", "1"),
+                 "Boosting" = ifelse(boosting.prob()<input$threshold, "0", "1"),
+                 "Random Forest" = predict (randomForest(class~., resampling_train()), test_sample(), type = "class")
+          )
+        }, silent = TRUE)
+      
+    })
+    
+    output$confusion = renderPrint({
+      
+      try(
+        {
+          switch(input$methods,
+                 "Logistic regression" = logit.conf(),
+                 "KNN" = knn.conf(),
+                 "LDA" = lda.conf(),
+                 "Classifications trees" = tree.conf(),
+                 "Boosting" = boosting.conf(),
+                 "Random Forest" = random.conf()
+          )
+        }, silent = TRUE)
+    })
+    
+    output$svm_perform = renderPrint({
+      
+      try(confusionMatrix (prediction_svm(), test_sample()$class, positive = "1"),
+          silent = TRUE)
+      
+    }) 
+    
+    output$roc_curve = renderPlot({
+      
+      try(     
+        {svm_roc = roc(as.numeric(test_sample()$class), as.numeric(prediction_svm()))
+        bench_roc = roc(as.numeric(test_sample()$class), as.numeric(bench_prediction()))
+        
+        g <- ggroc(list(SVM=svm_roc, Selected_Method=bench_roc), size = 1, legacy.axes = TRUE)
+        g + xlab("False Positive Rate") + ylab("True Positive Rate") + 
+          geom_segment(aes(x = 0, xend = 1, y = 0, yend = 1), color="darkgrey", linetype="dashed") +
+          annotate("text", x = 0.8, y = 0.2, label = paste("AUC =",sprintf("%.3f",svm_roc$auc)), size=3, color= "tomato2") +
+          annotate("text", x = 0.8, y = 0.4, label = paste("AUC =",sprintf("%.3f", bench_roc$auc)), size=3, color = "turquoise")}, silent = TRUE)
+      
+    })
      
-     
-     ####AAAAA SUPPPRIMMMERRRRRRRRRRRRRR################"""
-  #   resampling_train2 = reactive({
-  #     n_validat = reactive(floor(input$p_validation * nrow(resampling_train())))
-  #     train2 = reactive(sample(1:nrow(resampling_train()),n_validat()))
-  #     resampling_train()[train2(),]
-  #   })
-  #   
-  #   resampling_validat = reactive({
-  #     n_validat = reactive(floor(input$p_validation * nrow(resampling_train())))
-  #     train2 = reactive(sample(1:nrow(resampling_train()),n_validat()))
-  #     resampling_train()[-train2(),]
-  #   })
-  
-  
-  
-  
-  
+
   ###########################Prevision#############################
-  # 
-  # k=reactive({
-  #   
-  #   l=list()
-  #   
-  #   
-  #   
-  #   boxlist = setdiff(names(resampling_train()),"class")
-  #   
-  #   n=length(boxlist)
-  #   
-  #   for (i in 1:n) {
-  #     
-  #     x = paste("num",i, sep="") 
-  #     l[[i]]=box(numericInput(x,"",value=NA), width = 3, background = "navy",  
-  #                title = h5(boxlist[i], style = "display:inline; font-weight:bold"),
-  #                solidHeader = TRUE ,status = "primary",collapsible = TRUE)
-  #   }
-  #   l
-  # })
-  # 
-  # output$pred = renderUI(k())
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
+    
+    k = reactive({
+      
+      l=list()
+      
+      
+      boxlist = setdiff(names(resampling_train()),"class")
+      
+      n=length(boxlist)
+      
+      for (i in 1:n) {
+        
+        #id = paste("num",i, sep="") 
+        l[[i]]=box(numericInput(boxlist[i],"",value=0), width = 2,   
+                   title = h5(boxlist[i], style = "display:inline; font-weight:bold"),
+                   status = "primary",collapsible = TRUE)
+      }
+      # l[[n+1]] = box(verbatimTextOutput("targetpred"), width = 2,   
+      #                title = h5("Prediction", style = "display:inline; font-weight:bold"),
+      #                solidHeader = TRUE , status = "primary", collapsible = TRUE)
+      
+      l
+    })
+    
+    output$box_pred = renderUI(
+     try(
+       switch(input$select_predict,
+             "Load external data" = list(fileInput("extern_data", "External data"), dataTableOutput("table_prediction")) ,
+             "Enter data" = list(k(), actionButton("svm_pred","SVM Prediction"))), silent = TRUE)
+    ) 
+
+    output$pred = renderUI(
+      if (input$select_predict=="Enter data")
+      {
+        box(verbatimTextOutput("targetpred"), width = 2,   
+            title = h5("Prediction", style = "display:inline; font-weight:bold"),
+            solidHeader = TRUE , status = "primary", collapsible = TRUE)
+      }
+        )
+    
+    # output$targetpred = renderPrint({
+    #      
+    #     if (!is.null(input$select_predict))
+    #     {
+    #       Names = setdiff(names(resampling_train()),"class")
+    #       
+    #       n = length(Names)
+    #       
+    #       data = data.frame()
+    #       
+    #       for (i in 1:n)
+    #       {
+    #         data [1,i] = get(paste("input$",Names[i], sep="")) 
+    #       }
+    #       
+    #       names(data) = Names
+    #       
+    #       pred = predict(model_svm(), data)
+    #       
+    #       #as.numeric(pred)
+    #       input$V1
+    #     }
+    #   })
+
 })
 
