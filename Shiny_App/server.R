@@ -617,7 +617,8 @@ shinyServer(function(input, output, session) {
            xlab("False Positive Rate") + ylab("True Positive Rate") + 
            ggtitle("SVM ROC CURVE") +
            geom_segment(aes(x = 0, xend = 1, y = 0, yend = 1), color="darkgrey", linetype="dashed") +
-           annotate("text", x = 0.9, y = 0.2, label = paste("AUC =",sprintf("%.3f",svm_roc$auc)),colour="tomato",size=4)
+           annotate("text", x = 0.9, y = 0.2, label = paste("AUC =",sprintf("%.3f",svm_roc$auc)),colour="tomato",size=3) +
+           annotate("text", x = 0.9, y = 0.15, label = paste("GINI =",sprintf("%.3f",2*svm_roc$auc-1)),colour="tomato",size=3)
          svm_roc_plot
        
      })
@@ -783,8 +784,10 @@ shinyServer(function(input, output, session) {
         g <- ggroc(list(SVM=svm_roc, Selected_Method=bench_roc), size = 1, legacy.axes = TRUE)
         g + xlab("False Positive Rate") + ylab("True Positive Rate") + 
           geom_segment(aes(x = 0, xend = 1, y = 0, yend = 1), color="darkgrey", linetype="dashed") +
-          annotate("text", x = 0.8, y = 0.2, label = paste("AUC =",sprintf("%.3f",svm_roc$auc)), size=3, color= "tomato2") +
-          annotate("text", x = 0.8, y = 0.4, label = paste("AUC =",sprintf("%.3f", bench_roc$auc)), size=3, color = "turquoise")}, silent = TRUE)
+          annotate("text", x = 0.8, y = 0.2, label = paste("AUC =",sprintf("%.3f",svm_roc$auc)), size=3, colour= "tomato2") +
+          annotate("text", x = 0.8, y = 0.15, label = paste("GINI =",sprintf("%.3f",2*svm_roc$auc-1)), size=3, colour= "tomato2") +
+          annotate("text", x = 0.8, y = 0.4, label = paste("AUC =",sprintf("%.3f", bench_roc$auc)), size=3, colour = "turquoise") + 
+          annotate("text", x = 0.8, y = 0.35, label = paste("GINI =",sprintf("%.3f",2*bench_roc$auc-1)), size=3, colour= "turquoise")}                , silent = TRUE)
       
     })
      
@@ -792,7 +795,6 @@ shinyServer(function(input, output, session) {
   ###########################Prevision#############################
   
 
-    
     k = reactive({
       
       l=list()
@@ -804,57 +806,49 @@ shinyServer(function(input, output, session) {
       
       for (i in 1:n) {
         
-        #id = paste("num",i, sep="") 
         l[[i]]=box(numericInput(boxlist[i],"",value=0), width = 2,   
                    title = h5(boxlist[i], style = "display:inline; font-weight:bold"),
-                   status = "primary",collapsible = TRUE)
+                   status = "primary")
       }
-      # l[[n+1]] = box(verbatimTextOutput("targetpred"), width = 2,   
-      #                title = h5("Prediction", style = "display:inline; font-weight:bold"),
-      #                solidHeader = TRUE , status = "primary", collapsible = TRUE)
-      
-      l
+        l
     })
     
     output$box_pred = renderUI(
-     try(
-       switch(input$select_predict,
-             "Load external data" = list(fileInput("extern_data", "External data"), dataTableOutput("table_prediction")) ,
-             "Enter data" = list(k(), actionButton("svm_pred","SVM Prediction"))), silent = TRUE)
+     
+        try(k(), silent = TRUE)
     ) 
 
     output$pred = renderUI(
-      if (input$select_predict=="Enter data")
-      {
+     
         box(verbatimTextOutput("targetpred"), width = 2,   
             title = h5("Prediction", style = "display:inline; font-weight:bold"),
-            solidHeader = TRUE , status = "primary", collapsible = TRUE)
-      }
+            solidHeader = TRUE , status = "primary")
         )
     
-    # output$targetpred = renderPrint({
-    #      
-    #     if (!is.null(input$select_predict))
-    #     {
-    #       Names = setdiff(names(resampling_train()),"class")
-    #       
-    #       n = length(Names)
-    #       
-    #       data = data.frame()
-    #       
-    #       for (i in 1:n)
-    #       {
-    #         data [1,i] = get(paste("input$",Names[i], sep="")) 
-    #       }
-    #       
-    #       names(data) = Names
-    #       
-    #       pred = predict(model_svm(), data)
-    #       
-    #       #as.numeric(pred)
-    #       input$V1
-    #     }
-    #   })
+    output$targetpred = renderPrint({
+            
+             try(
+               
+              {Names = setdiff(names(resampling_train()),"class")
+              
+              n = length(Names)
+              
+              data = data.frame()
+              
+              for (i in 1:n)
+              {
+                data [1,i] = input[[Names[i]]]  
+              }
+              
+              names(data) = Names
+              
+              pred = predict(model_svm(), data)
+              
+              paste("Value :", as.numeric(pred))},
+              
+              silent = TRUE)
+           
+         })
 
 })
 

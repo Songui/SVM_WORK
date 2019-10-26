@@ -244,15 +244,7 @@ shinyUI(
         tabItem(tabName = "prediction",
                 fluidPage(
                   
-                  fluidRow(
-                    column(width=6,
-                           
-                           box(selectInput("select_predict","Please Choose one way !",
-                                           c("Load external data", "Enter data"),uiOutput("select_pred"))
-                               
-                           ))),
-                  
-                  fluidRow(
+                   fluidRow(
                     column(width=12,
                            uiOutput("box_pred"),
                            uiOutput("pred")
