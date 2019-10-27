@@ -83,45 +83,45 @@ shinyUI(
         ),
         tabItem(tabName = "data",
                 fluidPage(
-                  
-                  box(selectInput("type_file", "Type of file", c("CSV","TXT","EXCEL","SAS")), 
-                      fileInput("loading",""),
-                      uiOutput("file_options"),
-                      background = "navy", title="Load data",width = 4, solidHeader = TRUE, status = "primary",collapsible = TRUE ),
-                  
-                  box(uiOutput("target_ui"),
-                      background = "navy",title="Target Variable",width= 4, solidHeader = TRUE, status = "primary",collapsible = TRUE, footer = helpText("Make sure that you choose categorical variable in order to avoid errors !")),
-                  
-                  box(uiOutput("other_var_ui"),
-                      background = "navy",width= 4,title="Others Variables", solidHeader = TRUE, status = "primary",collapsible = TRUE, footer = helpText("You can't remove all variables !",br(),br())),
-                  
-                  tabBox (width = 12,title="Statistics and graphics", id = "stat",
-                          tabPanel("Data",
-                                   dataTableOutput("data")
-                          ),
-                          tabPanel("Summary",
-                                   verbatimTextOutput("sum1"),
-                                   htmlOutput("plot1")
-                          ),
-                          tabPanel("Graphics",
-                                   fluidRow(column(width=6,
-                                                   box(plotOutput("plot2"),
-                                                       background = "navy", width = 12,title="Target Variable Barplot", solidHeader = TRUE,status = "primary",collapsible = TRUE)),
-                                            column(width=6,
-                                                   box(plotOutput("plot3"),
-                                                       background = "navy",width = 12, title="Correlation Matrix",solidHeader = TRUE ,status = "primary",collapsible = TRUE))
-                                   ),
-                                   fluidRow(column(width=2),
-                                            column(width=10,
-                                                   box(column(width=3 ,uiOutput("boxplot_var")),
-                                                       column(width=9 , plotOutput("plot4")),
-                                                       background = "navy", width = 10,title="BoxPlot",solidHeader = TRUE,status = "primary",collapsible = TRUE)),
-                                            column(width=2)
-                                            
-                                   )
-                          )
-                  )
-                )      
+                   box( 
+                    box(selectInput("type_file", "Type of file", c("CSV","TXT","EXCEL","SAS")), 
+                        fileInput("loading",""),
+                        uiOutput("file_options"),
+                        background = "navy", title="Load data",width = 4, solidHeader = TRUE, status = "primary",collapsible = TRUE ),
+                    
+                    box(uiOutput("target_ui"),
+                        background = "navy",title="Target Variable",width= 4, solidHeader = TRUE, status = "primary",collapsible = TRUE, footer = helpText("Make sure that you a choose categorical variable in order to avoid errors !")),
+                    
+                    box(uiOutput("other_var_ui"),
+                        background = "navy",width= 4,title="Others Variables", solidHeader = TRUE, status = "primary",collapsible = TRUE, footer = helpText("You can't remove all variables ! These variables will be removed only from the model and prediction part.")),
+                    
+                    tabBox (width = 12,title="Statistics and graphics", id = "stat",
+                            tabPanel("Data",
+                                     dataTableOutput("data")
+                            ),
+                            tabPanel("Summary",
+                                     verbatimTextOutput("sum1"),
+                                     htmlOutput("plot1")
+                            ),
+                            tabPanel("Graphics",
+                                     fluidRow(column(width=6,
+                                                     box(plotOutput("plot2"),
+                                                         background = "navy", width = 12,title="Target Variable Barplot", solidHeader = TRUE,status = "primary",collapsible = TRUE)),
+                                              column(width=6,
+                                                     box(plotOutput("plot3"),
+                                                         background = "navy",width = 12, title="Correlation Matrix",solidHeader = TRUE ,status = "primary",collapsible = TRUE))
+                                     ),
+                                     fluidRow(column(width=2),
+                                              column(width=10,
+                                                     box(column(width=3 ,uiOutput("boxplot_var")),
+                                                         column(width=9 , plotOutput("plot4")),
+                                                         background = "navy", width = 10,title="BoxPlot",solidHeader = TRUE,status = "primary",collapsible = TRUE)),
+                                              column(width=2)
+                                              
+                                     )
+                            )
+                    )
+                    , width = 12))      
         ),
         tabItem(tabName = "svm" , 
                 
@@ -179,8 +179,8 @@ shinyUI(
                                                      br(),
                                                      fluidRow(
                                                        tags$head(tags$style(HTML(".small-box {height: 130px}"))),
-                                                       valueBox("Robustness...", "against noise thanks to the maximization of the margin, which makes the SVM more generalizable", icon = icon("thumbs-up"),color = "light-blue"),
-                                                       valueBox("Ease...", "of use because unlike some methods, we can use them without understanding all the operation", icon = icon("thumbs-up"), color = "light-blue"),
+                                                       valueBox("Robust...", "on small sample", icon = icon("thumbs-up"),color = "light-blue"),
+                                                       valueBox("Good...", "predictive ability when hyperparameters are well chosen", icon = icon("thumbs-up"), color = "light-blue"),
                                                        valueBox("Flexibility...", "of the method that adapts according to the nature of the data", icon = icon("thumbs-up"), color = "light-blue")
                                                      ),  width = 12),
                                                  box(h3(strong("Drawbacks of supports vectors machines")),
@@ -195,87 +195,93 @@ shinyUI(
                                                  
                                                  title="Supports vectors machines",status = "primary", solidHeader = TRUE,collapsible = TRUE, width = 12)
                                            )),
-                                  tabPanel("Implementation and results",
+                                  tabPanel("Implementation and Performance",
                                            sidebarLayout(
                                              box(
-                                               h4(strong("Hyper-parameters choices")), 
-                                               checkboxInput(inputId = 'scale', label = 'Check if the data is not centered and reduced',value=FALSE),
-                                               radioButtons(inputId = 'selection_auto', label = 'Do you want to use automatic parameter selection with cross-validation?',choices=c('Yes', 'No'),inline=TRUE),
-                                               bsPopover(id="selection_auto",title="Cross validation", content="If yes, optimization of the choice of hyper-parameters in order to avoid over-learning, cross validation will be used to find the best model and hyper-parameters.",placement="left"),
-                                               uiOutput("choix_param"),
-                                               uiOutput("value2"),
-                                               actionBttn("submit1","Submit",
-                                                          color = "primary",
-                                                          size = "xs",
-                                                          style = "gradient",
-                                                          icon = icon("refresh"),
-                                                          block = FALSE,
-                                                          no_outline=FALSE),
+                                               h4(strong("Hyper-parameters choices")),
+                                               box(
+                                                 checkboxInput(inputId = 'scale', label = 'Center and reduce the variables',value=TRUE),
+                                                 radioButtons(inputId = 'selection_auto', label = 'Do you want to use automatic parameter selection with cross-validation?',choices=c('Yes', 'No'),inline=TRUE),
+                                                 bsPopover(id="selection_auto",title="Cross validation", content="If yes, optimization of the choice of hyper-parameters in order to avoid over-learning, cross validation will be used to find the best model and hyper-parameters.",placement="left"),
+                                                 uiOutput("choix_param"),
+                                                 uiOutput("value2"),
+                                                 actionBttn("submit1","Submit",
+                                                            color = "primary",
+                                                            size = "xs",
+                                                            style = "gradient",
+                                                            icon = icon("refresh"),
+                                                            block = FALSE,
+                                                            no_outline=FALSE), width = 12),
                                                br(),br(),br(),
                                                h4(strong("Summary")),
-                                               verbatimTextOutput("value"),
-                                              # verbatimTextOutput("best_model"),
-                                               
-                                               title="Implementation",status = "primary", solidHeader = TRUE,collapsible = TRUE, width = 6),
+                                               box(verbatimTextOutput("value"), width = 12),
+
+                                               title="Implementation",status = "primary", solidHeader = TRUE, width = 6),
                                              box(
                                                  verbatimTextOutput("tab_confus"),
                                                  br(),
                                                  plotOutput("roc"),
-                                                 title="Performance",status = "primary", solidHeader = TRUE,collapsible = TRUE, width = 6)
+                                                 title="Performance",status = "primary", solidHeader = TRUE, width = 6)
                                            )
                                   )  
                 ))),
         tabItem(tabName = "benchmark",
                 fluidPage(
-                  tabBox (width=12,
-                          title="SVM Comparison with others Methods", id = "comparison",
-                          tabPanel("Benchmarking",
-                                   sidebarLayout( 
-                                     sidebarPanel(selectInput("methods","Choose Methods",c("Logistic regression","KNN","LDA","Classifications trees","Boosting", "Random Forest")),
-                                                  uiOutput("method_param"),
-                                                  actionBttn("submit2","Submit",
-                                                             color = "primary",
-                                                             size = "xs",
-                                                             style = "gradient",
-                                                             icon = icon("refresh"),
-                                                             block = FALSE,
-                                                             no_outline=FALSE), width = 3),
-                                     mainPanel(fluidRow(
-                                       column(width=6, box(verbatimTextOutput("confusion"),
-                                                           background = "navy",width = 12, title="Selected Method Performance",solidHeader = TRUE , status = "primary",collapsible = TRUE)),
-                                       column(width=6, box(verbatimTextOutput("svm_perform"), background = "navy", width = 12, title="SVM Performance", solidHeader = TRUE , status = "primary", collapsible = TRUE))
-                                     ),
-                                     fluidRow(
-                                       column(width=6, box(plotOutput("roc_curve"), background = "navy", width = 12, title="Roc Curve", solidHeader = TRUE ,status = "primary",collapsible = TRUE))#,
-                                       # column(width=6,
-                                       #        box(plotOutput ("gini"),
-                                       #            background = "navy",width = 12, title="Gini Index",solidHeader = TRUE ,status = "primary",collapsible = TRUE))
-                                     ), width = 9)
-                                     
-                          ))
-                          
-                  )
-                  
-                )),
+                   box (sidebarLayout( 
+                     sidebarPanel(selectInput("methods","Choose Methods",c("Logistic regression","KNN","LDA","Classifications trees","Boosting", "Random Forest")),
+                                  uiOutput("method_param"),
+                                  actionBttn("submit2","Submit",
+                                             color = "primary",
+                                             size = "xs",
+                                             style = "gradient",
+                                             icon = icon("refresh"),
+                                             block = FALSE,
+                                             no_outline=FALSE), width = 4),
+                     mainPanel(" ",width = 8)
+                     
+                   ),
+                   fluidRow(
+                     column(width=4, box(verbatimTextOutput("confusion"),
+                                         background = "navy",width = 12, title="Selected Method Performance",solidHeader = TRUE , status = "primary",collapsible = TRUE)),
+                     column(width=4, box(verbatimTextOutput("svm_perform"), background = "navy", width = 12, title="SVM Performance", solidHeader = TRUE , status = "primary", collapsible = TRUE)),
+                     column(width=4, box(plotOutput("roc_curve"), background = "navy", width = 12, title="Roc Curve", solidHeader = TRUE ,status = "primary",collapsible = TRUE))
+                   ), width=12, title="SVM Comparison with others Methods"
+                ))),
+        
+        
         tabItem(tabName = "prediction",
                 fluidPage(
-                  
-                   fluidRow(
-                    column(width=12,
-                           uiOutput("box_pred"),
-                           uiOutput("pred")
-                           
-                    )
-                    
-                  ))),
+                  box(
+                   fluidRow(column(width=12,
+                                   uiOutput("box_pred"),
+                                   uiOutput("pred")))
+                   , width = 12))),
+        
+        
         tabItem(tabName = "sample",
                 fluidPage(
-                  numericInput("select_train","Training proportion",min=0, max=1, value=0.7, step=0.01),
-                  selectInput("select_sampling","Choose the method",c("Oversampling", "Undersampling", "SMOTE", "ADASYN", "Tomek-Link", "Tomek-Link + Undersampling","Condensed Nearest Neighbor" )),
-                  uiOutput("sampling_out"),
-                  dataTableOutput("out")
-                  
-                ))
+                  box(
+                    fluidRow(
+                      sidebarPanel(
+                        numericInput("select_train","Training proportion choice",min=0, max=1, value=0.7, step=0.01),
+                        selectInput("select_sampling","Choose the method",c("Oversampling", "Undersampling", "SMOTE", "ADASYN", "Tomek-Link", "Tomek-Link + Undersampling","Condensed Nearest Neighbor")),
+                    uiOutput("sampling_out"),
+                    actionBttn("submit4","Submit",
+                               color = "primary",
+                               size = "xs",
+                               style = "gradient",
+                               icon = icon("refresh"),
+                               block = FALSE,
+                               no_outline=FALSE)
+                      ),
+                      sidebarPanel(
+                        helpText(strong("This sampling part allows you to choose the way by which data will be splitted.
+                         In general, 70% (or 80%) of the whole sample is used for the training sample and 30% (or 20%) for the test sample. In our case, the choice is given to user to opt for the subdivision he wants even if a 70/30 splitting is advised.")), helpText(strong("It is also possible to use the resampling method for the class whose realization is rare (credit card fraud).")) , width = 5)
+                    ),
+                    box(h3(strong("Resampling data")),
+                        br(),
+                        dataTableOutput("out"), width = 12)
+          , width = 12)))
         
       )
     ),

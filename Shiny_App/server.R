@@ -335,7 +335,11 @@ shinyServer(function(input, output, session) {
     
   })
   
-  output$out = renderDataTable(resampling_train(), options = list(scrollX = TRUE)) 
+  
+  
+  eR8 = eventReactive(input$submit4,resampling_train())
+  
+  output$out = renderDataTable(eR8(), options = list(scrollX = TRUE)) 
   
   
   
@@ -536,19 +540,6 @@ shinyServer(function(input, output, session) {
        }
        
      })
-     
-     # output$best_model = renderPrint({
-     #   
-     #   if (input$selection_auto =="Yes")
-     #     
-     #   {
-     #     best_mod =  names(result())[which.min(result()[4,2:5])+1]
-           # result = result()
-           # result[6,3] = best_mod 
-           # result[7,3] = model_svm()$tot.nSV
-           # result
-     #     
-     #   }})
      
      
      eR1 = eventReactive(input$submit1,   
