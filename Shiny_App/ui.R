@@ -23,6 +23,7 @@ library(gbm)
 library(caret)
 library(pROC)
 library(shinyBS)
+library(shinyWidgets)
 
 
 
@@ -203,6 +204,15 @@ shinyUI(
                                                bsPopover(id="selection_auto",title="Cross validation", content="If yes, optimization of the choice of hyper-parameters in order to avoid over-learning, cross validation will be used to find the best model and hyper-parameters.",placement="left"),
                                                uiOutput("choix_param"),
                                                uiOutput("value2"),
+                                               actionBttn("submit1","Submit",
+                                                          color = "primary",
+                                                          size = "xs",
+                                                          style = "gradient",
+                                                          icon = icon("refresh"),
+                                                          block = FALSE,
+                                                          no_outline=FALSE),
+                                               br(),br(),br(),
+                                               h4(strong("Summary")),
                                                verbatimTextOutput("value"),
                                               # verbatimTextOutput("best_model"),
                                                
@@ -222,7 +232,14 @@ shinyUI(
                           tabPanel("Benchmarking",
                                    sidebarLayout( 
                                      sidebarPanel(selectInput("methods","Choose Methods",c("Logistic regression","KNN","LDA","Classifications trees","Boosting", "Random Forest")),
-                                                  uiOutput("method_param"), width = 3),
+                                                  uiOutput("method_param"),
+                                                  actionBttn("submit2","Submit",
+                                                             color = "primary",
+                                                             size = "xs",
+                                                             style = "gradient",
+                                                             icon = icon("refresh"),
+                                                             block = FALSE,
+                                                             no_outline=FALSE), width = 3),
                                      mainPanel(fluidRow(
                                        column(width=6, box(verbatimTextOutput("confusion"),
                                                            background = "navy",width = 12, title="Selected Method Performance",solidHeader = TRUE , status = "primary",collapsible = TRUE)),
@@ -235,8 +252,7 @@ shinyUI(
                                        #            background = "navy",width = 12, title="Gini Index",solidHeader = TRUE ,status = "primary",collapsible = TRUE))
                                      ), width = 9)
                                      
-                          ))#,
-                          # tabPanel("Benchmarking2")
+                          ))
                           
                   )
                   

@@ -1,10 +1,8 @@
 #Projet_SVM_AKS
 #ACTIVER UTF8
 
-#On doit permettre à l'utilisateur de faire entrer la variable target y
-#######The minority class must be coded 1 and the majority 0 for the unbalanced family function ??? #####
-####### We should imposed that the class have to be the last one of the data column and called "class" ?? #####
 
+library(shinyWidgets)
 library(MASS)
 library(FNN)
 library(summarytools)
@@ -553,9 +551,9 @@ shinyServer(function(input, output, session) {
      #   }})
      
      
-     output$value = renderPrint({  
+     eR1 = eventReactive(input$submit1,   
 
-      try(
+       try(
         {
             if (input$selection_auto == "No")
            {
@@ -594,35 +592,35 @@ shinyServer(function(input, output, session) {
           
          } , silent = TRUE)
        
-     })
+     )
+     
+     output$value = renderPrint(eR1())
      
      
-     prediction_svm = reactive({
-       try( predict(model_svm(), test_sample()), silent = TRUE)
-       })
+     prediction_svm = reactive(try( predict(model_svm(), test_sample()), silent = TRUE))
      
-      output$tab_confus = renderPrint({
-       
-         try(confusionMatrix (prediction_svm(), test_sample()$class, positive = "1"),
-             silent = TRUE)  
-     })
+     eR2 = eventReactive(input$submit1,
+                         try(confusionMatrix (prediction_svm(), test_sample()$class, positive = "1"),
+                             silent = TRUE)
+                         ) 
+                         
+                         
+     output$tab_confus = renderPrint(eR2())
   
-         
-      
-     output$roc = renderPlot ({
-      
-         svm_roc = roc(as.numeric(test_sample()$class), as.numeric(prediction_svm()))
-         
-         svm_roc_plot = ggroc(svm_roc, legacy.axes = TRUE, alpha = 1, colour = "tomato", size = 1) + 
-           xlab("False Positive Rate") + ylab("True Positive Rate") + 
-           ggtitle("SVM ROC CURVE") +
-           geom_segment(aes(x = 0, xend = 1, y = 0, yend = 1), color="darkgrey", linetype="dashed") +
-           annotate("text", x = 0.9, y = 0.2, label = paste("AUC =",sprintf("%.3f",svm_roc$auc)),colour="tomato",size=3) +
-           annotate("text", x = 0.9, y = 0.15, label = paste("GINI =",sprintf("%.3f",2*svm_roc$auc-1)),colour="tomato",size=3)
-         svm_roc_plot
-       
-     })
-     
+        
+     eR3 = eventReactive(input$submit1,
+                        try({svm_roc = roc(as.numeric(test_sample()$class), as.numeric(prediction_svm()))
+                         
+                            svm_roc_plot = ggroc(svm_roc, legacy.axes = TRUE, alpha = 1, colour = "tomato", size = 1) + 
+                              xlab("False Positive Rate") + ylab("True Positive Rate") + 
+                              ggtitle("SVM ROC CURVE") +
+                              geom_segment(aes(x = 0, xend = 1, y = 0, yend = 1), color="darkgrey", linetype="dashed") +
+                              annotate("text", x = 0.9, y = 0.2, label = paste("AUC =",sprintf("%.3f",svm_roc$auc)),colour="tomato",size=3) +
+                              annotate("text", x = 0.9, y = 0.15, label = paste("GINI =",sprintf("%.3f",2*svm_roc$auc-1)),colour="tomato",size=3)
+                            svm_roc_plot}, silent = TRUE)
+                         )
+                         
+      output$roc = renderPlot (eR3())
     
   #########################Benchmarking##########################
     
@@ -753,8 +751,8 @@ shinyServer(function(input, output, session) {
       
     })
     
-    output$confusion = renderPrint({
-      
+
+    eR4 = eventReactive(input$submit2,
       try(
         {
           switch(input$methods,
@@ -766,30 +764,29 @@ shinyServer(function(input, output, session) {
                  "Random Forest" = random.conf()
           )
         }, silent = TRUE)
-    })
+    )
+    output$confusion = renderPrint(eR4())
     
-    output$svm_perform = renderPrint({
-      
-      try(confusionMatrix (prediction_svm(), test_sample()$class, positive = "1"),
-          silent = TRUE)
-      
-    }) 
+    eR5 = eventReactive(input$submit2,
+                        try(confusionMatrix (prediction_svm(), test_sample()$class, positive = "1"),
+                            silent = TRUE))
+    output$svm_perform = renderPrint(eR5()) 
     
-    output$roc_curve = renderPlot({
-      
-      try(     
-        {svm_roc = roc(as.numeric(test_sample()$class), as.numeric(prediction_svm()))
-        bench_roc = roc(as.numeric(test_sample()$class), as.numeric(bench_prediction()))
-        
-        g <- ggroc(list(SVM=svm_roc, Selected_Method=bench_roc), size = 1, legacy.axes = TRUE)
-        g + xlab("False Positive Rate") + ylab("True Positive Rate") + 
-          geom_segment(aes(x = 0, xend = 1, y = 0, yend = 1), color="darkgrey", linetype="dashed") +
-          annotate("text", x = 0.8, y = 0.2, label = paste("AUC =",sprintf("%.3f",svm_roc$auc)), size=3, colour= "tomato2") +
-          annotate("text", x = 0.8, y = 0.15, label = paste("GINI =",sprintf("%.3f",2*svm_roc$auc-1)), size=3, colour= "tomato2") +
-          annotate("text", x = 0.8, y = 0.4, label = paste("AUC =",sprintf("%.3f", bench_roc$auc)), size=3, colour = "turquoise") + 
-          annotate("text", x = 0.8, y = 0.35, label = paste("GINI =",sprintf("%.3f",2*bench_roc$auc-1)), size=3, colour= "turquoise")}                , silent = TRUE)
-      
-    })
+    eR6 = eventReactive(input$submit2,
+                        try(     
+                          {svm_roc = roc(as.numeric(test_sample()$class), as.numeric(prediction_svm()))
+                          bench_roc = roc(as.numeric(test_sample()$class), as.numeric(bench_prediction()))
+                          
+                          g <- ggroc(list(SVM=svm_roc, Selected_Method=bench_roc), size = 1, legacy.axes = TRUE)
+                          g + xlab("False Positive Rate") + ylab("True Positive Rate") + 
+                            geom_segment(aes(x = 0, xend = 1, y = 0, yend = 1), color="darkgrey", linetype="dashed") +
+                            annotate("text", x = 0.8, y = 0.2, label = paste("AUC =",sprintf("%.3f",svm_roc$auc)), size=3, colour= "tomato2") +
+                            annotate("text", x = 0.8, y = 0.15, label = paste("GINI =",sprintf("%.3f",2*svm_roc$auc-1)), size=3, colour= "tomato2") +
+                            annotate("text", x = 0.8, y = 0.4, label = paste("AUC =",sprintf("%.3f", bench_roc$auc)), size=3, colour = "turquoise") + 
+                            annotate("text", x = 0.8, y = 0.35, label = paste("GINI =",sprintf("%.3f",2*bench_roc$auc-1)), size=3, colour= "turquoise")}, silent = TRUE)
+                )
+    
+    output$roc_curve = renderPlot(eR6())
      
 
   ###########################Prevision#############################
@@ -820,35 +817,44 @@ shinyServer(function(input, output, session) {
 
     output$pred = renderUI(
      
-        box(verbatimTextOutput("targetpred"), width = 2,   
+        box(verbatimTextOutput("targetpred"), 
+            actionBttn("submit3","Submit",
+                       color = "primary",
+                       size = "xs",
+                       style = "gradient",
+                       icon = icon("refresh"),
+                       block = FALSE,
+                       no_outline=FALSE), width = 2,   
             title = h5("Prediction", style = "display:inline; font-weight:bold"),
             solidHeader = TRUE , status = "primary")
         )
     
-    output$targetpred = renderPrint({
-            
-             try(
-               
-              {Names = setdiff(names(resampling_train()),"class")
-              
-              n = length(Names)
-              
-              data = data.frame()
-              
-              for (i in 1:n)
-              {
-                data [1,i] = input[[Names[i]]]  
-              }
-              
-              names(data) = Names
-              
-              pred = predict(model_svm(), data)
-              
-              paste("Value :", as.numeric(pred))},
-              
-              silent = TRUE)
-           
-         })
+
+      eR7 = eventReactive(input$submit3,
+                          try(
+                             
+                            {Names = setdiff(names(resampling_train()),"class")
+                            
+                            n = length(Names)
+                            
+                            data = data.frame()
+                            
+                            for (i in 1:n)
+                            {
+                              data [1,i] = input[[Names[i]]]  
+                            }
+                            
+                            names(data) = Names
+                            
+                            pred = predict(model_svm(), data)
+                            
+                            paste("Value :", as.numeric(pred))},
+                            
+                            silent = TRUE)
+                          )
+                         
+      output$targetpred = renderPrint(eR7())
+      
 
 })
 
