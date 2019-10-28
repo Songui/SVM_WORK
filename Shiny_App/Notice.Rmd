@@ -1,0 +1,57 @@
+---
+title: "**Presentation and use of our Shiny app ! **"
+author: "_AKS GROUP_"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Welcome to our Shiny app ! 
+
+When you launch the link of our application, you will face the authentication page. Here, you must enter your username and password and click on the Login button to access the content of the application.After you are authenticated, you will have access to the content of the application.
+
+Please, make sure that you are correctly authenticating by clicking on the button at the top on the right represent by an setting icon.  
+The button next to it,represented by a triangle is the notification button. It is at this level that you have been able to download this notice via the download button to help you in the use of this application.
+
+The menus on the right shows the different steps of our application (Data, Model, Prediction). We invite you to move forward sequentially. In other words, follow the steps one by one because they are all related to each other. This is to allow the proper operation of this application and permit to have correct results.
+
+We also want to draw your attention to part of the case "*Data description from MLG kaggle page*". You have the description of the database which allowed us to realize this demonstrator. Know that you can reduce this frame or leaving it, according to your desires, allowed by the small button that represents a dash to the right of the light blue dial. This saves space on a page and avoids overloading it. 
+
+*__Attention: it's a dynamic application, so you'll have to follow the instructions!__*
+
+# Data part
+
+By clicking on the Data tab, you will have several steps to follow in order to have the correct results.
+To begin, you have the load data box. Here you have to choose the file type (Please select Excel among all the choices in our case) then click on browse to load the file.     
+After, you must specify the characteristics of your files concerning the delimiter, the decimal type and whether the first line refers to variable names or not (if that is the case, tick the header button otherwise leave empty). Here, you have to tick the header button.
+Thereafter, you have to choose your target variable (variable “class“ here).  
+on the "Other variables" box, you will select the variable what you want to eliminate for your work. Here, you have to eliminate Time because it does not bring real information for our modelization.    
+After having followed all the previous steps, results will appear following the choices made above. You will see the database (data), descriptive statistics on each variable (summary) and finally, graphs that are more visually speaking.
+
+# Models part
+In this part, you have three sub parts: Sampling, SVM method and Benchmarking analysis. I remind you that we must follow the steps one by one.
+
+- *__Sampling__*
+
+At this level, you can choose the method that you think is appropriate for resampling. Then click on the Submit button, otherwise nothing will happen.  
+
+* *__SVM method__*
+
+At this level, you have two parts. One concerns the general description of the Support Vector Machine (SVM) method and the other its implementation and performance.  
+At the implementation, you have to choose the different value of parameters that interest you to do it. The parameters have been individually described when you hover over each of them to enhance your understanding. At the end, please click on the submit button.
+
++ *__Benchmarking analysis__*
+
+At this stage, you have to choose the method that interests you to make a comparison with the performance of the SVM. Please, also choose the classification threshold and do not forget to click on the submit button.
+
+
+
+# Prediction
+All the previous steps allow you to come to the prediction step, described by its name.  
+It is the model developed in svm which makes it possible to make the prediction
