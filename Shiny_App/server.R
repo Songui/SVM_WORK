@@ -85,21 +85,21 @@ shinyServer(function(input, output, session) {
   
   ####Download Notice button###### 
   output$dow = downloadHandler (
+    ###filename donne la sortie du document.Si c'est en pdf, il faut mettre Notice.pdf
     filename = "Notice.docx",
+    #Dans l'aide, ils ont dit que content est égale à une fonction qui prend pour argument file et qui
+    #représente un chemin de fichier pour un chemin temporaire non existant et écrit le contenu dans
+    #ce chemin de fichier
     content= function(file) {
-      tempReport <- file.path(tempdir(), "essai.Rmd")
-      
-      file.copy("essai.Rmd", tempReport, overwrite = TRUE)
+      tempReport <- file.path(tempdir(), "Notice.Rmd")
+      file.copy("Notice.Rmd", tempReport, overwrite = TRUE)
       
       rmarkdown :: render(tempReport,output_file = file,
                           envir=new.env(parent=globalenv()))
     }
   )
   
-  
-  
-  
-  
+
   ##################### Authentification ########################
   
   values <- reactiveValues(authenticated = FALSE)
