@@ -33,10 +33,17 @@ shinyUI(
     header = dashboardHeaderPlus(
       title = "FRAUD DETECTION",
       dropdownMenu(type = "notifications", notificationItem(
-        text = "Download notice downside",
+        text = downloadBttn  ("dow", "Download notice here",
+                              color = "primary",
+                              size = "sm",
+                              style = "minimal",
+                              block = FALSE,
+                              no_outline=FALSE), 
         icon("bell"),
-        status = "info"
-      )),
+        status = "primary")
+        
+      )
+  ,
       enable_rightsidebar = TRUE,
       rightSidebarIcon = "gears"
     ),

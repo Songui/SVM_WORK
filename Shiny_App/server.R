@@ -82,6 +82,24 @@ options(shiny.maxRequestSize=150*1024^2)
 
 shinyServer(function(input, output, session) {
   
+  
+  ####Download Notice button###### 
+  output$dow = downloadHandler (
+    filename = "Notice.docx",
+    content= function(file) {
+      tempReport <- file.path(tempdir(), "essai.Rmd")
+      
+      file.copy("essai.Rmd", tempReport, overwrite = TRUE)
+      
+      rmarkdown :: render(tempReport,output_file = file,
+                          envir=new.env(parent=globalenv()))
+    }
+  )
+  
+  
+  
+  
+  
   ##################### Authentification ########################
   
   values <- reactiveValues(authenticated = FALSE)
@@ -132,21 +150,12 @@ shinyServer(function(input, output, session) {
         Username <- input$username
         Id <- which(my_username == Username)
         nameE =  all_names[Id]
-        # c = paste("You are authentified as", nameE)
-        # background-color:powderblue;
         div(nameE,style = "color:rgb(180,85,85);font-family: verdana;
             font-size: 150%; border: 1px solid powderblue;
             padding: 5px;")
-      }
-      
-      
-      
-      }
+      } }
   )
   
-  #output$authent1 = renderText(
-  
-  # "  Fully enjoy our app !" )
   
   
   ###################### DATA PART ##############################  
@@ -163,7 +172,6 @@ shinyServer(function(input, output, session) {
                         radioButtons(inputId = 'dec', label = 'Decimal', choices = c(Point=".", Comma=','), selected = '.')
            ),
            "EXCEL" = checkboxInput(inputId = 'header', label = strong('Header'), value = TRUE))
-    
   })
   
   
@@ -188,9 +196,7 @@ shinyServer(function(input, output, session) {
   output$target_ui = renderUI({
     
     selectInput("targetvar", "Select your target variable",names(raw_data()))
-    
   })
-  
   
   data = reactive ({
     validate(
@@ -208,7 +214,6 @@ shinyServer(function(input, output, session) {
       need(is.null(data()) == FALSE, "Please select a file")
     )
     which(names(data()) == "class")
-    
   })
   
   output$other_var_ui = renderUI({
@@ -236,7 +241,6 @@ shinyServer(function(input, output, session) {
     ggplot(data=data()) + geom_bar(mapping = aes(x=class))
   )
   
-  
   output$plot1 = renderUI(
     
     print(dfSummary(data(), graph.magnif = 0.8), 
@@ -244,7 +248,6 @@ shinyServer(function(input, output, session) {
           headings = FALSE,
           bootstrap.css = FALSE)
   )
-  
   
   output$sum1 = renderPrint( introduce(data()) )
   
@@ -294,9 +297,7 @@ shinyServer(function(input, output, session) {
            "Undersampling" = sliderInput("p","Rare class resampling probability", min = 0, max= 1, value=0.5, step=0.01),
            "SMOTE" = verticalLayout(numericInput("dup_size","Duplicated size",min=1,value=2), numericInput("k_near","K nearest neighbors",min=1, value=5)),
            "ADASYN" = numericInput("k_near","K nearest neighbors",min=1, value = 5)
-           
     )
-    
   })
   
   
@@ -330,20 +331,14 @@ shinyServer(function(input, output, session) {
                 "Condensed Nearest Neighbor" = {data = ubCNN(X=train_sample[,-y_position], Y= train_sample[,y_position]);
                 cbind(data$X,class=data$Y) }
     )
-    
-    
-    
   })
-  
-  
-  
+
   eR8 = eventReactive(input$submit4,resampling_train())
   
   output$out = renderDataTable(eR8(), options = list(scrollX = TRUE)) 
   
-  
-  
-  #################### SVM PART ########################
+
+    #################### SVM PART ########################
   
   
   output$choix_param = renderUI({

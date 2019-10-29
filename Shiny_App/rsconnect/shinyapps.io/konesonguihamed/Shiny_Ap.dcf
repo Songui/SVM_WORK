@@ -1,0 +1,12 @@
+name: Shiny_Ap
+title: Shiny_Ap
+username:
+account: konesonguihamed
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1388452
+bundleId: 2543598
+url: https://konesonguihamed.shinyapps.io/Shiny_Ap/
+when: 1572263887.45807
+asMultiple: FALSE
+asStatic: FALSE
