@@ -1,7 +1,6 @@
 #Projet_SVM_AKS
 #ACTIVER UTF8
 
-
 library(shinyWidgets)
 library(MASS)
 library(FNN)
@@ -25,6 +24,8 @@ library(gbm)
 library(caret)
 library(pROC)
 library(e1071)
+
+
 
 Logged = FALSE
 
