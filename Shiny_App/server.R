@@ -164,7 +164,7 @@ shinyServer(function(input, output, session) {
   
   ############ 1% of data ############
   
- default_data = reactive ({ load("E:/ORLEANS/Cours/Master 2 ESA/Semestre1/SVM/RAPPORT/SVM_WORK/Shiny_App/www/creditcard.RData")
+ default_data = reactive ({ load(url("https://github.com/Songui/SVM_WORK/blob/master/creditcard.RData?raw=true"))
   
   index1 = which(creditcard$Class==1)
   l1=length(index1)
@@ -183,7 +183,7 @@ shinyServer(function(input, output, session) {
   
   output$file_options = renderUI({
     
-    switch(input$type_file,
+      switch(input$type_file,
            "CSV" = list(radioButtons(inputId = 'sep', label = 'Separator', choices = c(Comma=',',Semicolon=';',Tab='\t', Space=''), selected = ','),
                         checkboxInput(inputId = 'header', label =strong('Header'), value = TRUE),
                         radioButtons(inputId = 'dec', label = 'Decimal', choices = c(Point='.', Comma=','), selected = '.')

@@ -98,10 +98,11 @@ shinyUI(
                                     icon = icon("refresh"),
                                     block = FALSE,
                                     no_outline=FALSE),
-                         background = "navy",title="Target Variable",width= 4, solidHeader = TRUE, status = "primary",collapsible = TRUE, footer = helpText("Make sure that you choose a categorical variable in order to avoid errors !")),
+                         background = "navy",title="Target Variable",width= 4, solidHeader = TRUE, status = "primary",collapsible = TRUE, footer = helpText("Make sure that you choose a categorical variable in order to avoid errors !"), height = 250),
                      box(uiOutput("other_var_ui"),
-                         background = "navy",width= 4,title="Others Variables", solidHeader = TRUE, status = "primary",collapsible = TRUE, footer = helpText("You can't remove all variables ! These variables will be removed only from the model and prediction part.")),
-                     box(selectInput("type_file", "Type of file", c("CSV","TXT","EXCEL","SAS")), 
+                         br(),
+                         background = "navy",width= 4,title="Others Variables", solidHeader = TRUE, status = "primary",collapsible = TRUE, footer = helpText("You can't remove all variables ! These variables will be removed only from the model and prediction part."), height = 250),
+                     box(selectInput("type_file", "Type of file", c("CSV","TXT","EXCEL","SAS"), selected="SAS"), 
                         fileInput("loading",""),
                         uiOutput("file_options"),
                         actionBttn("submit5","Submit",
@@ -313,7 +314,7 @@ shinyUI(
     enable_preloader = TRUE,
     #collapse_sidebar = TRUE,
     sidebar_background ="light",
-    loading_duration = 0.5
+    loading_duration = 1
     #md =TRUE
     # dashboardControlbar()
     
