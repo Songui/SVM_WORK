@@ -42,8 +42,7 @@ shinyUI(
         icon("bell"),
         status = "primary")
         
-      )
-  ,
+      ),
       enable_rightsidebar = TRUE,
       rightSidebarIcon = "gears"
     ),
@@ -63,7 +62,7 @@ shinyUI(
                 fluidPage(
                   box(h3("Welcome to the credit card fraud detection app !", align="center"), width=12, background = "navy"),
                   
-                  box(h5(p("This app allows you to detect a case of credit card fraud, quickly and easily by mainly using", em(strong("Supports Vectors Machines.")), "By default, we use data from Machine Learning Group (MLG) of Brussels University.")), width=12),
+                  box(h5(p("This app allows you to detect a case of credit card fraud, quickly and easily by mainly using", em(strong("Supports Vectors Machines.")), "By default, we use data from Machine Learning Group (MLG) of Brussels University. To make this app more faster, only a very small part of the default data is used but you can load the entire data or another external data in the subsection 'Load data' of section 'Data'.")), width=12),
                   
                   box(h3(strong("Context")),
                       p("It is important that credit card companies are able to recognize fraudulent credit card transactions so that customers are not charged for items that they did not purchase."),
@@ -91,16 +90,28 @@ shinyUI(
         tabItem(tabName = "data",
                 fluidPage(
                    box( 
-                    box(selectInput("type_file", "Type of file", c("CSV","TXT","EXCEL","SAS")), 
+                     box(uiOutput("target_ui"),
+                         actionBttn("submit6","Submit",
+                                    color = "primary",
+                                    size = "xs",
+                                    style = "gradient",
+                                    icon = icon("refresh"),
+                                    block = FALSE,
+                                    no_outline=FALSE),
+                         background = "navy",title="Target Variable",width= 4, solidHeader = TRUE, status = "primary",collapsible = TRUE, footer = helpText("Make sure that you choose a categorical variable in order to avoid errors !")),
+                     box(uiOutput("other_var_ui"),
+                         background = "navy",width= 4,title="Others Variables", solidHeader = TRUE, status = "primary",collapsible = TRUE, footer = helpText("You can't remove all variables ! These variables will be removed only from the model and prediction part.")),
+                     box(selectInput("type_file", "Type of file", c("CSV","TXT","EXCEL","SAS")), 
                         fileInput("loading",""),
                         uiOutput("file_options"),
-                        background = "navy", title="Load data",width = 4, solidHeader = TRUE, status = "primary",collapsible = TRUE ),
-                    
-                    box(uiOutput("target_ui"),
-                        background = "navy",title="Target Variable",width= 4, solidHeader = TRUE, status = "primary",collapsible = TRUE, footer = helpText("Make sure that you a choose categorical variable in order to avoid errors !")),
-                    
-                    box(uiOutput("other_var_ui"),
-                        background = "navy",width= 4,title="Others Variables", solidHeader = TRUE, status = "primary",collapsible = TRUE, footer = helpText("You can't remove all variables ! These variables will be removed only from the model and prediction part.")),
+                        actionBttn("submit5","Submit",
+                                   color = "primary",
+                                   size = "xs",
+                                   style = "gradient",
+                                   icon = icon("refresh"),
+                                   block = FALSE,
+                                   no_outline=FALSE),
+                        background = "navy", title="Load external data if you want !",width = 4, solidHeader = TRUE, status = "primary",collapsible = TRUE ),
                     
                     tabBox (width = 12,title="Statistics and graphics", id = "stat",
                             tabPanel("Data",
@@ -205,7 +216,8 @@ shinyUI(
                                   tabPanel("Implementation and Performance",
                                            sidebarLayout(
                                              box(
-                                               h4(strong("Hyper-parameters choices")),
+                                                popify(a(href="https://www.csie.ntu.edu.tw/~cjlin/papers/guide/guide.pdf", target="_blank",h4(strong("Hyper-parameters choices"))),
+                                                       "Cost and gamma", "Please click to see the paper that we use to choose the cost and gamma hyperparameters (page 5 and 7)."),
                                                box(
                                                  checkboxInput(inputId = 'scale', label = 'Center and reduce the variables',value=TRUE),
                                                  radioButtons(inputId = 'selection_auto', label = 'Do you want to use automatic parameter selection with cross-validation?',choices=c('Yes', 'No'),inline=TRUE),
@@ -223,19 +235,19 @@ shinyUI(
                                                h4(strong("Summary")),
                                                box(verbatimTextOutput("value"), width = 12),
 
-                                               title="Implementation",status = "primary", solidHeader = TRUE, width = 6),
+                                               title="Implementation",status = "primary", solidHeader = TRUE, width = 6,height = 1000),
                                              box(
                                                  verbatimTextOutput("tab_confus"),
                                                  br(),
                                                  plotOutput("roc"),
-                                                 title="Performance",status = "primary", solidHeader = TRUE, width = 6)
+                                                 title="Performance",status = "primary", solidHeader = TRUE, width = 6,height = 1000)
                                            )
                                   )  
                 ))),
         tabItem(tabName = "benchmark",
                 fluidPage(
                    box (sidebarLayout( 
-                     sidebarPanel(selectInput("methods","Choose Methods",c("Logistic regression","KNN","LDA","Classifications trees","Boosting", "Random Forest")),
+                     sidebarPanel(selectInput("methods","Choose resampling methods",c("Logistic regression","KNN","LDA","Classifications trees","Boosting", "Random Forest")),
                                   uiOutput("method_param"),
                                   actionBttn("submit2","Submit",
                                              color = "primary",
@@ -249,9 +261,9 @@ shinyUI(
                    ),
                    fluidRow(
                      column(width=4, box(verbatimTextOutput("confusion"),
-                                         background = "navy",width = 12, title="Selected Method Performance",solidHeader = TRUE , status = "primary",collapsible = TRUE)),
-                     column(width=4, box(verbatimTextOutput("svm_perform"), background = "navy", width = 12, title="SVM Performance", solidHeader = TRUE , status = "primary", collapsible = TRUE)),
-                     column(width=4, box(plotOutput("roc_curve"), background = "navy", width = 12, title="Roc Curve", solidHeader = TRUE ,status = "primary",collapsible = TRUE))
+                                         background = "navy",width = 12, title="Selected Method Performance",solidHeader = TRUE , status = "primary",collapsible = TRUE, height =600 )),
+                     column(width=4, box(verbatimTextOutput("svm_perform"), background = "navy", width = 12, title="SVM Performance", solidHeader = TRUE , status = "primary", collapsible = TRUE, height =600)),
+                     column(width=4, box(plotOutput("roc_curve"), background = "navy", width = 12, title="Roc Curve", solidHeader = TRUE ,status = "primary",collapsible = TRUE, height =600))
                    ), width=12, title="SVM Comparison with others Methods"
                 ))),
         

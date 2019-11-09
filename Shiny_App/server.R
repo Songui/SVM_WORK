@@ -27,6 +27,7 @@ library(e1071)
 
 
 
+
 Logged = FALSE
 
 my_username <- c("esa_ch", "esa_jd", "esa_ksh","esa_asm", "esa_slk")
@@ -112,7 +113,7 @@ shinyServer(function(input, output, session) {
                 passwordInput("password", "Password :")
                 
       ),
-      footer = actionButton("ok", "LogIn"),
+      footer = fluidRow(column(5,"If can't access, please contact us to have access !", em(strong("esa.aks.group@gmail.com"))), column(4, " "), column(3,actionButton("ok", "LogIn"))),
       fade = FALSE
     )
   }
@@ -161,6 +162,25 @@ shinyServer(function(input, output, session) {
   
   ###################### DATA PART ##############################  
   
+  ############ 1% of data ############
+  
+ default_data = reactive ({ load("E:/ORLEANS/Cours/Master 2 ESA/Semestre1/SVM/RAPPORT/SVM_WORK/Shiny_App/www/creditcard.RData")
+  
+  index1 = which(creditcard$Class==1)
+  l1=length(index1)
+  index0= which(creditcard$Class==0)
+  l0=length(index0)
+  
+  choix0 = sample (index0,size=l0*0.001)
+  
+  choix1 = sample (index1,size=l1*0.1)
+  
+  creditcard[c(choix1,choix0),] 
+  })
+  
+  ########################################
+  
+  
   output$file_options = renderUI({
     
     switch(input$type_file,
@@ -175,34 +195,41 @@ shinyServer(function(input, output, session) {
            "EXCEL" = checkboxInput(inputId = 'header', label = strong('Header'), value = TRUE))
   })
   
+  eR9 = eventReactive(input$submit5, { file = input$loading
+                                      data= switch(input$type_file,
+                                                   "CSV" = read.csv (file$datapath, header = input$header, sep = input$sep, dec = input$dec), 
+                                                   "TXT" = read.table (file$datapath, header = input$header, sep = input$sep, dec = input$dec),
+                                                   "EXCEL" = read_excel(file$datapath, col_names = input$header),
+                                                   "SAS" = read_sas(file$datapath)
+                                      )
+                                      as.data.frame(data)}
+                      )
+  
   
   raw_data = reactive ({
-    validate(
-      need(is.null(input$loading)== FALSE, "Please select a file")
-    )
     
-    file = input$loading
-    
-    data= switch(input$type_file,
-                 "CSV" = read.csv (file$datapath, header = input$header, sep = input$sep, dec = input$dec), 
-                 "TXT" = read.table (file$datapath, header = input$header, sep = input$sep, dec = input$dec),
-                 "EXCEL" = read_excel(file$datapath, col_names = input$header),
-                 "SAS" = read_sas(file$datapath)
-    )
-    as.data.frame(data)
+    if (!input$submit5)
+    {
+    default_data()}
+    # validate(
+    #   need(is.null(input$loading)== FALSE, "Please select a file")
+    # )
+    else
+      
+    {eR9()} 
     
   }) 
   
   
   output$target_ui = renderUI({
     
-    selectInput("targetvar", "Select your target variable",names(raw_data()))
+    selectInput("targetvar", "Select your target variable",names(raw_data()),selected ="Class")
   })
   
   data = reactive ({
-    validate(
-      need(is.null(input$loading) == FALSE, "Please select a file")
-    )  
+    # validate(
+    #   need(is.null(input$loading) == FALSE, "Please select a file")
+    # )  
     data = raw_data() 
     data[,input$targetvar] = as.factor(data[,input$targetvar])
     names(data)[which(names(data) == input$targetvar)] = "class"
@@ -211,58 +238,68 @@ shinyServer(function(input, output, session) {
   
   
   target_position = reactive({
-    validate(
-      need(is.null(data()) == FALSE, "Please select a file")
-    )
+    # validate(
+    #   need(is.null(data()) == FALSE, "Please select a file")
+    # )
     which(names(data()) == "class")
   })
   
   output$other_var_ui = renderUI({
-    validate(
-      need(is.null(input$targetvar) == FALSE, "Please select a file")
-    )
+    # validate(
+    #   need(is.null(input$targetvar) == FALSE, "Please select a file")
+    # )
     
     selectInput("other_var", "Select variables to withdraw from modelisation",names(data())[- target_position()],multiple = TRUE)
   })
   
   
-  output$data = renderDataTable(data() , options = list(scrollX = TRUE))
+  eR10 = eventReactive(input$submit6, data())
+  output$data = renderDataTable(eR10() , options = list(scrollX = TRUE))
   
+  
+  eR11 = eventReactive(input$submit6,{data = as.matrix(dplyr::select_if(data(), is.numeric))
+                                      corrplot(cor(data,use = "complete.obs"),tl.col="black")}
+                       )
   
   output$plot3 = renderPlot({
+    eR11()
     
-    data = as.matrix(dplyr::select_if(data(), is.numeric))
-    
-    corrplot(cor(data,use = "complete.obs"),tl.col="black")
   })
   
+  eR12 = eventReactive(input$submit6,{ggplot(data=data()) + geom_bar(mapping = aes(x=class))})
   
   output$plot2 = renderPlot(
     
-    ggplot(data=data()) + geom_bar(mapping = aes(x=class))
+    eR12()
   )
   
+  
+  eR13 = eventReactive(input$submit6,  print(dfSummary(data(), graph.magnif = 0.8), 
+                                             method = 'render',
+                                             headings = FALSE,
+                                             bootstrap.css = FALSE) )
   output$plot1 = renderUI(
     
-    print(dfSummary(data(), graph.magnif = 0.8), 
-          method = 'render',
-          headings = FALSE,
-          bootstrap.css = FALSE)
+    eR13()
+  
   )
   
-  output$sum1 = renderPrint( introduce(data()) )
   
+  eR14 = eventReactive(input$submit6,introduce(data()))
+  output$sum1 = renderPrint( eR14() )
+  
+  eR15 = eventReactive(input$submit6, selectInput("boxplot","Choose one variable for BoxPlot",names(dplyr::select_if(data(), is.numeric   ))))
   
   output$boxplot_var = renderUI(
-    
-    selectInput("boxplot","Choose one variable for BoxPlot",names(dplyr::select_if(data(), is.numeric   )))
+    eR15()
   )
   
-  output$plot4 = renderPlot(
-    
-    ggplot(data = data()) + 
+  eR16 = eventReactive(input$submit6,{ ggplot(data = data()) + 
       geom_boxplot(mapping = aes(x = class, y = get(input$boxplot))) +
-      labs(y = input$boxplot)
+      labs(y = input$boxplot)})
+  
+  output$plot4 = renderPlot(
+    eR16()
   )
   
   
@@ -347,7 +384,7 @@ shinyServer(function(input, output, session) {
     switch(input$selection_auto,
            
            "No" = list(
-             popify(el = sliderInput(inputId = "cost",label = list("Cost parameter",icon("question-circle")), min = 1, max = 1000, value = 10),
+             popify(el = selectInput(inputId = "cost",label = list("Cost parameter",icon("question-circle")), choices = c(2^-5,2^-3,2^-1,2^1,2^3,2^5,2^7,2^9,2^11,2^13,2^15)),
                     title="Cost parameter",
                     content="This hyper-parameter designates a coefficient of penalization parameter. The smaller it is, the less the classification errors are penalized and the focus is on maximizing the margin. The larger it is, the more emphasis is placed on the absence of misclassification and the margin becomes lower.",               placement = "top"),
              
@@ -363,16 +400,16 @@ shinyServer(function(input, output, session) {
              
              h5(strong("Choose the parameter range for the kernel functions :")),
              
-             numericInput("tune_kfold",label = "Number of fold for Cross-validation", min = 0, max = 10, value = 5, step=1),
+             numericInput("tune_kfold",label = "Number of fold for Cross-validation", min = 2, max = 10, value = 4, step=2),
              
-             popify(el = sliderInput(inputId = "auto_cost",label = list("Cost parameter",icon("question-circle")), min = 1, max = 1000, value=c(1,5)),
+             popify(el = sliderInput(inputId = "auto_cost",label = list("Cost parameter",icon("question-circle")), min = 2^-5, max = 2^15, value=c(2^-3,2^5), step=2^3),
                     title="Cost parameter",
                     content="This hyper-parameter designates a coefficient of penalization parameter. The smaller it is, the less the classification errors are penalized and the focus is on maximizing the margin. The larger it is, the more emphasis is placed on the absence of misclassification and the margin becomes lower.",
                     placement = "top"),
              
              popify(el = sliderInput(inputId='auto_gamma', 
                                      label = list("Degree of linearity of the hyperplane",icon("question-circle")),
-                                     min=0, max=10, value=c(2,3),step=0.01),
+                                     min=2^-15, max=2^3, value=c(2^-3,2^1),step=2^-3),
                     title = "<b>Gamma</b>", 
                     content = "Hyper-parameter for nonlinear hyperplanes. The higher the value, the more the method adjusts to the data.",
                     placement = "top"),
@@ -394,29 +431,29 @@ shinyServer(function(input, output, session) {
         
       {
           t_l = tune(svm, class ~., data = resampling_train(), 
-                     ranges = list(cost = seq(as.numeric(input$auto_cost[1]),as.numeric(input$auto_cost[2]),5), 
+                     ranges = list(cost = seq(as.numeric(input$auto_cost[1]),as.numeric(input$auto_cost[2]),2^3), 
                                    kernel = "linear"),
                      tunecontrol = tune.control(sampling = "cross", cross = input$tune_kfold),
                      tolerance = 0.01)
           
           t_r = tune(svm, class ~., data = resampling_train(), 
-                     ranges = list(gamma = seq(input$auto_gamma[1],input$auto_gamma[2], by=0.1), 
-                                   cost = seq(as.numeric(input$auto_cost[1]),as.numeric(input$auto_cost[2]),5), 
+                     ranges = list(gamma = seq(input$auto_gamma[1],input$auto_gamma[2], by=2^-3), 
+                                   cost = seq(as.numeric(input$auto_cost[1]),as.numeric(input$auto_cost[2]),2^3), 
                                    kernel = "radial"),
                      tunecontrol = tune.control(sampling = "cross", cross = input$tune_kfold),
                      tolerance = 0.01)
           
           t_p = tune(svm, class ~., data = resampling_train(), 
                      ranges = list(degree = seq(input$auto_degree[1],input$auto_degree[2],by=1),
-                                   gamma = seq(input$auto_gamma[1],input$auto_gamma[2], by=0.1), 
-                                   cost = seq(input$auto_cost[1],input$auto_cost[2],by=5), 
+                                   gamma = seq(input$auto_gamma[1],input$auto_gamma[2], by=2^-3), 
+                                   cost = seq(input$auto_cost[1],input$auto_cost[2],by=2^3), 
                                    kernel = "polynomial"),
                      tunecontrol = tune.control(sampling = "cross", cross = input$tune_kfold),
                      tolerance = 0.01)
           
           t_s = tune(svm, class ~., data = resampling_train(), 
-                     ranges = list(gamma = seq(input$auto_gamma[1],input$auto_gamma[2], by=0.1), 
-                                   cost = seq(input$auto_cost[1],input$auto_cost[2],by=5), 
+                     ranges = list(gamma = seq(input$auto_gamma[1],input$auto_gamma[2], by=2^-3), 
+                                   cost = seq(input$auto_cost[1],input$auto_cost[2],by=2^3), 
                                    kernel = "sigmoid"),
                      tunecontrol = tune.control(sampling = "cross", cross = input$tune_kfold),
                      tolerance = 0.01)
@@ -442,16 +479,16 @@ shinyServer(function(input, output, session) {
          
          switch (input$kernel,
                  
-                 "sigmoid" = popify(el = sliderInput("gamma_s",
+                 "sigmoid" = popify(el = selectInput("gamma_s",
                                                    label = list("Degree of linearity of the hyperplane",icon("question-circle")),
-                                                   min = 0.001, max = 10, value = 0.1),
+                                                   choices = c(2^-15,2^-13,2^-11,2^-9,2^-7,2^-5,2^-3,2^-1,2^1,2^3)),
                                     title = "<b>Gamma</b>", 
                                     content = "Hyper-parameter for nonlinear hyperplanes. The higher the value, the more the method adjusts to the data.",
                                     placement = "top"),
                  
                  "polynomial" = list(
-                                    popify(el = sliderInput("gamma_p",label = list("Degree of linearity of the hyperplane",icon("question-circle")), 
-                                                          min = 0.001, max = 10, value = 0.1),
+                                    popify(el = selectInput("gamma_p",label = list("Degree of linearity of the hyperplane",icon("question-circle")), 
+                                                            choices = c(2^-15,2^-13,2^-11,2^-9,2^-7,2^-5,2^-3,2^-1,2^1,2^3)),
                                             title = "<b>Gamma</b>",
                                             content ="Hyper-parameter for nonlinear hyperplanes. The higher the value, the more the method adjusts to the data.",
                                             placement = "top"),
@@ -461,8 +498,8 @@ shinyServer(function(input, output, session) {
                                             content ="Corresponds to the degree of polynomial used by the kernel function to find the optimal hyperplane",
                                             placement ="top")
                                     ),
-                 "radial" = popify(el = sliderInput("gamma_rd",label = list("Degree of linearity of the hyperplane",icon("question-circle")), 
-                                                          min = 0.001, max = 10, value = 0.1),
+                 "radial" = popify(el = selectInput("gamma_rd",label = list("Degree of linearity of the hyperplane",icon("question-circle")), 
+                                                    choices = c(2^-15,2^-13,2^-11,2^-9,2^-7,2^-5,2^-3,2^-1,2^1,2^3)),
                                          title = "<b>Gamma</b>",
                                          content = "Hyper-parameter for nonlinear hyperplanes. The higher the value, the more the method adjusts to the data.",
                                          placement = "top")
@@ -630,9 +667,9 @@ shinyServer(function(input, output, session) {
     })
     
     n_target_position = reactive({
-      validate(
-        need(is.null(resampling_train()) == FALSE, "Please select a file")
-      )
+      # validate(
+      #   need(is.null(resampling_train()) == FALSE, "Please select a file")
+      # )
       which(names(resampling_train()) == "class")
       
     })
