@@ -113,7 +113,7 @@ shinyServer(function(input, output, session) {
                 passwordInput("password", "Password :")
                 
       ),
-      footer = fluidRow(column(5,"If can't access, please contact us to have access !", em(strong("esa.aks.group@gmail.com"))), column(4, " "), column(3,actionButton("ok", "LogIn"))),
+      footer = fluidRow(column(5,"If you can't access, please contact us to have access !", em(strong("esa.aks.group@gmail.com"))), column(4, " "), column(3,actionButton("ok", "LogIn"))),
       fade = FALSE
     )
   }

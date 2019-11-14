@@ -307,8 +307,8 @@ shinyUI(
     ),
     rightsidebar = rightSidebar(titlePanel(h4("Connected")), helpText(br(),h4(strong("You are authentified as"))),htmlOutput("authent")),
     footer = dashboardFooter(
-      left_text = h6("© GROUP AKS OF MASTER ESA - Any reproduction, even partial, of the page is strictly forbidden"),
-      right_text = h6("ORLEANS 2019")
+      left_text = a(href="https://www.univ-orleans.fr/deg/masters/ESA/", target="_blank",h6(strong("© GROUP AKS - MASTER ESA"))),
+      right_text = h6("Any reproduction, even partial, of the page is strictly forbidden - ORLEANS 2019")
     ),
     
     enable_preloader = TRUE,
