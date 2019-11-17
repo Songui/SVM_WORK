@@ -24,6 +24,7 @@ library(gbm)
 library(caret)
 library(pROC)
 library(e1071)
+library(tinytex)
 
 
 

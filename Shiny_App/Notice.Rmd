@@ -4,54 +4,62 @@ author: "_AKS GROUP_"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   word_document: default
-  pdf_document: default
-  html_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-#Welcome to our Shiny app ! 
+# Welcome to our Shiny app ! 
 
-When you launch the link of our application, you will face the authentication page. Here, you must enter your username and password and click on the Login button to access the content of the application.After you are authenticated, you will have access to the content of the application.
+When you launch the link of our application, you will have the authentication page. Here, you must enter your username and password and click on the **Log In** button. 
+After you are authenticated, you will have access to the content of the application. Please, make sure that you are correctly authenticating by clicking on the button at the top on the right ![](https://raw.githubusercontent.com/Songui/Image/master/Capture.PNG){width=0.4cm}. If you see the message connected and your name also, it notifies that you are well connected and our application will properly work.
 
-Please, make sure that you are correctly authenticating by clicking on the button at the top on the right represent by an setting icon.  
-The button next to it,represented by a triangle is the notification button. It is at this level that you have been able to download this notice via the download button to help you in the use of this application.
+The button ![](https://raw.githubusercontent.com/Songui/Image/master/Capture1.PNG){width=0.4cm} is the notification button. It is at this level that you have been able to download this notice via the download button to help you in using this application.
 
-The menus on the right shows the different steps of our application (Data, Model, Prediction). We invite you to move forward sequentially. In other words, follow the steps one by one because they are all related to each other. This is to allow the proper operation of this application and permit to have correct results.
+The menus on the right shows the different steps of our application (Data, Model, Prediction). We invite you to move forward sequentially. In other words, follow the steps one by one, because they are all related to each other. This is to allow the proper operation of this application and permit to have correct results.
 
-We also want to draw your attention to part of the case "*Data description from MLG kaggle page*". You have the description of the database which allowed us to realize this demonstrator. Know that you can reduce this frame or leaving it, according to your desires, allowed by the small button that represents a dash to the right of the light blue dial. This saves space on a page and avoids overloading it. 
+We also want to draw your attention to part of the case "*Data description from MLG kaggle page*". You have the description of the database which allowed us to realize our demonstrator. Know that you can reduce this frame or leaving it, according to your desires, allowed by ![](https://raw.githubusercontent.com/Songui/Image/master/Capture2.PNG){width=0.4cm}, which is on the right side. This saves space on a page and avoids overloading it. 
+At the bottom of the page, you have the link to visit our formation website indicated by "© GROUP AKS - MASTER ESA".
+Do not hesitate to click on this link if you are interested or curious.
 
 *__Attention: it's a dynamic application, so you'll have to follow the instructions!__*
 
 # Data part
 
 By clicking on the Data tab, you will have several steps to follow in order to have the correct results.
-To begin, you have the load data box. Here you have to choose the file type (Please select Excel among all the choices in our case) then click on browse to load the file.     
-After, you must specify the characteristics of your files concerning the delimiter, the decimal type and whether the first line refers to variable names or not (if that is the case, tick the header button otherwise leave empty). Here, you have to tick the header button.
-Thereafter, you have to choose your target variable (variable “class“ here).  
-on the "Other variables" box, you will select the variable what you want to eliminate for your work. Here, you have to eliminate Time because it does not bring real information for our modelization.    
-After having followed all the previous steps, results will appear following the choices made above. You will see the database (data), descriptive statistics on each variable (summary) and finally, graphs that are more visually speaking.
+Please wait a few seconds, as long as the data is loaded on the application. You can continue when the variable **class** will appear in the _Target Variable box_. It is the target variable of our database.
+You are now facing 3 boxes: Target Variable, Others Variables and Load external data if you want!.   
+ **Target Variable box**    
+Here, you just have to select the target variable. But in our case, it is defined by default. So, you don't have something to do except click on the submit button to view the database, the general descriptive statistics of it via the summary tab and some graphics via the graphics tab.   
+
+The two other boxes that we will explain now should not be touched unless you are interested after understanding what they are doing.  
+
+ **Others Variables**    
+In this box, you can select the variable that you want to eliminate (is you have) for your modeling and if the variable does not provide any useful information.      
+ **Load external data if you want!**  
+Given the interactivity of our application, you have the opportunity to work on other databases than the one we are working on.At this level, you must select the type of file you want to enter and download it. Then, you have to specify the characteristics of your file concerning the delimiter, the decimal type and whether the first line refers to variable names or not (if that is the case, tick the header button otherwise leave empty). At the end, you must submit this via the submit button and you will see your database and statistics. Be careful to select your target variable in the Target Variable Box at this time and make sure that it is in a binary form (0 or 1). Finally, you will have this interface :        
+
+![Data Step Interface](https://raw.githubusercontent.com/Songui/Image/master/Capture3.PNG){width=12cm}  
 
 # Models part
 In this part, you have three sub parts: Sampling, SVM method and Benchmarking analysis. I remind you that we must follow the steps one by one.
 
 - *__Sampling__*
 
-At this level, you can choose the method that you think is appropriate for resampling. Then click on the Submit button, otherwise nothing will happen.  
+At this level, you can choose the method that you think is appropriate for resampling. Then, click on the submit button, otherwise nothing will happen.  
 
 * *__SVM method__*
 
-At this level, you have two parts. One concerns the general description of the Support Vector Machine (SVM) method and the other its implementation and performance.  
-At the implementation, you have to choose the different value of parameters that interest you to do it. The parameters have been individually described when you hover over each of them to enhance your understanding. At the end, please click on the submit button.
+At this level, you have two parts. One concerns the general description of the Support Vector Machine method (SVM) and the other its implementation and performance.  
+At the implementation, you have to choose the differents values of parameters that interest you to do it. The parameters have been individually described when you hover over each of them to enhance your understanding. We also add an article, which helped us in our parameters choice decision. You can download it by clicking on "**Hyper-parameters choices**". At the end, please click on the submit button to see the results of our implementation.  
+_Given the size of our database, wait a few seconds before see our results_.  
 
 + *__Benchmarking analysis__*
 
-At this stage, you have to choose the method that interests you to make a comparison with the performance of the SVM. Please, also choose the classification threshold and do not forget to click on the submit button.
-
+At this step, you have to choose the method that interests you to make a comparison of the SVM performance. Please, also choose the classification threshold and do not forget to click on the submit button.  
 
 
 # Prediction
 All the previous steps allow you to come to the prediction step, described by its name.  
-It is the model developed in svm which makes it possible to make the prediction
+It is the model developed in svm which makes it possible. You can manually enter the desired values for each explanatory variable and click on the submit button to view the value of the forecast.
