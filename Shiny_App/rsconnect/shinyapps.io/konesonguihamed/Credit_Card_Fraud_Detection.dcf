@@ -1,0 +1,13 @@
+name: Credit_Card_Fraud_Detection
+title: Credit_Card_Fraud_Detection
+username:
+account: konesonguihamed
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1484773
+bundleId: 2596049
+url: https://konesonguihamed.shinyapps.io/Credit_Card_Fraud_Detection/
+when: 1574030043.41109
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: Notice.docx|Notice.html|Notice.log|Notice.tex
